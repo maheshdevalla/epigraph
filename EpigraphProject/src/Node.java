@@ -21,6 +21,11 @@ public abstract class Node
         return freq;
     }
 
+    void setFreq(int f)
+    {
+        freq = f;
+    }
+
     String getEpitope()
     {
         return epitope;
