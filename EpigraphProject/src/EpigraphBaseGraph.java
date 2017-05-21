@@ -11,6 +11,11 @@ public class EpigraphBaseGraph extends Graph
     {
         super(a, b, c, d);
     }
+    
+    EpigraphBaseGraph(EpigraphBaseGraph g)
+    {
+    	super(g);
+    }
 
     public EpigraphBaseNode getNode(int i)
     {

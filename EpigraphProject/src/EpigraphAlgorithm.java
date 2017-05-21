@@ -15,9 +15,16 @@ public class EpigraphAlgorithm
         {
             EpigraphBaseNode n = graph.getNode(i);
             ArrayList<EpigraphBaseNode> predecessors = graph.getPredecessors(n);
-            int max_freq = getMaxFrequency(predecessors);
-
-            n.setF(n.getFreq() + max_freq);
+            System.out.println(predecessors);
+            if (!predecessors.isEmpty()) 
+            {
+            	int max_freq = getMaxFrequency(predecessors);
+            	n.setF(n.getFreq() + max_freq);
+            }
+            else 
+            {
+            	n.setF(n.getFreq());
+            }
         }
 
 
@@ -28,10 +35,14 @@ public class EpigraphAlgorithm
         while(true)
         {
             ArrayList<EpigraphBaseNode> predecessors = graph.getPredecessors(current_node);
-            EpigraphBaseNode max_freq_node = getNodeMaxFrequency(predecessors);
-            path.add(max_freq_node);
-            output = max_freq_node.getEpitope()+output;
-            current_node = max_freq_node;
+            if (!predecessors.isEmpty()) {
+            	EpigraphBaseNode max_freq_node = getNodeMaxFrequency(predecessors);
+            	path.add(max_freq_node);
+            	output = max_freq_node.getEpitope()+output;
+            	current_node = max_freq_node;
+            } else {
+            	break;
+            }
             if(current_node == begin)
             {
                 break;

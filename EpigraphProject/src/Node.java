@@ -35,4 +35,10 @@ public abstract class Node
     {
         return id;
     }
+    
+    @Override
+    public String toString()
+    {
+    	return epitope;
+    }
 }

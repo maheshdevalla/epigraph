@@ -14,9 +14,10 @@ public class TTVAlgorithm {
 			for (int i=0; i<s.length(); i++)
 			{
 				String epitope = s.charAt(i)+"";
-				if (!(freqmap.containsKey(s.charAt(i)))) {
+				if (!(freqmap.containsKey(s.charAt(i)+""))) {
 					freqmap.put(epitope, 1/total);
 				}
+				
 				else {
 					freqmap.put(epitope, freqmap.get(epitope) + 1/total);
 				}
@@ -197,11 +198,31 @@ public class TTVAlgorithm {
 	public static void main(String[] args)
 	{
 		ArrayList<String> seq = new ArrayList<String>();
-		seq.add("abcde");
-		seq.add("afgie");
-		seq.add("fgbde");
-		seq.add("fghej");
-		int v = 10, e = 12;
+//		seq.add("abcde");
+//		seq.add("afgie");
+//		seq.add("fgbde");
+//		seq.add("fghej");
+		
+//		seq.add("bde");
+//		seq.add("cde");
+//		seq.add("cde");
+//		seq.add("de");
+//		seq.add("e");
+		
+		seq.add("abcdef");
+		seq.add("bijkl");
+		seq.add("cjel");
+		seq.add("ghcjkl");
+		seq.add("bcjkl");
+		seq.add("ghijkf");
+		seq.add("gbi");
+		seq.add("bijk");
+		seq.add("gbidkf");
+		seq.add("ghijkl");
+		
+//		int v = 5, e = 5;
+		int v = 12, e = 20;
+		//int v = 10, e = 12;
 		ArrayList<Node> ar = new ArrayList<>();
 		HashMap<Node, ArrayList<Node>> m = new HashMap<>();
 		for(int i=0;i<v;i++)
@@ -215,26 +236,53 @@ public class TTVAlgorithm {
 			m.put(ar.get(i), new ArrayList<>());
 		}
 
+//		m.get(ar.get(0)).add(ar.get(1));
+//		m.get(ar.get(0)).add(ar.get(5));
+//		m.get(ar.get(1)).add(ar.get(2));
+//		m.get(ar.get(1)).add(ar.get(3));
+//		m.get(ar.get(2)).add(ar.get(3));
+//		m.get(ar.get(3)).add(ar.get(4));
+//		m.get(ar.get(4)).add(ar.get(9));
+//		m.get(ar.get(5)).add(ar.get(6));
+//		m.get(ar.get(6)).add(ar.get(1));
+//		m.get(ar.get(6)).add(ar.get(7));
+//		m.get(ar.get(6)).add(ar.get(8));
+//		m.get(ar.get(7)).add(ar.get(4));
+//		m.get(ar.get(8)).add(ar.get(4));
+		
+//		m.get(ar.get(0)).add(ar.get(1));
+//		m.get(ar.get(0)).add(ar.get(2));
+//		m.get(ar.get(1)).add(ar.get(3));
+//		m.get(ar.get(2)).add(ar.get(3));
+//		m.get(ar.get(3)).add(ar.get(4));
+		
 		m.get(ar.get(0)).add(ar.get(1));
-		m.get(ar.get(0)).add(ar.get(5));
+		m.get(ar.get(0)).add(ar.get(7));
 		m.get(ar.get(1)).add(ar.get(2));
-		m.get(ar.get(1)).add(ar.get(3));
+		m.get(ar.get(1)).add(ar.get(8));
 		m.get(ar.get(2)).add(ar.get(3));
+		m.get(ar.get(2)).add(ar.get(9));
 		m.get(ar.get(3)).add(ar.get(4));
-		m.get(ar.get(4)).add(ar.get(9));
-		m.get(ar.get(5)).add(ar.get(6));
-		m.get(ar.get(6)).add(ar.get(1));
+		m.get(ar.get(3)).add(ar.get(10));
+		m.get(ar.get(4)).add(ar.get(5));
+		m.get(ar.get(4)).add(ar.get(11));
 		m.get(ar.get(6)).add(ar.get(7));
-		m.get(ar.get(6)).add(ar.get(8));
-		m.get(ar.get(7)).add(ar.get(4));
-		m.get(ar.get(8)).add(ar.get(4));
+		m.get(ar.get(6)).add(ar.get(1));
+		m.get(ar.get(7)).add(ar.get(2));
+		m.get(ar.get(7)).add(ar.get(8));
+		m.get(ar.get(8)).add(ar.get(3));
+		m.get(ar.get(8)).add(ar.get(9));
+		m.get(ar.get(9)).add(ar.get(4));
+		m.get(ar.get(9)).add(ar.get(10));
+		m.get(ar.get(10)).add(ar.get(5));
+		m.get(ar.get(10)).add(ar.get(11));
 
 		EpigraphBaseGraph in = new EpigraphBaseGraph(v, e, ar, m);
 
 		//CocktailAlgorithm ca = new CocktailAlgorithm();
 		TTVAlgorithm ta = new TTVAlgorithm();
 		ta.computeFreq(seq, in);
-		ArrayList<String> ttv = ta.ttvalgo(in, 4, 9, seq);
+		ArrayList<String> ttv = ta.ttvalgo(in, 3, 9, seq);
 		System.out.println(ttv);
 //		ArrayList<EpigraphBaseNode> path = ea.optimalPath(in, in.getNode(0), in.getNode(4));
 //		for(int i=0;i<path.size();i++)

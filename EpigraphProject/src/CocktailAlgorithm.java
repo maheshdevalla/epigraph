@@ -6,6 +6,33 @@ import java.util.Set;
 
 public class CocktailAlgorithm
 {
+	public void computeFreq(ArrayList<String> seq, EpigraphBaseGraph graph)
+	{
+		double total = seq.size();
+		HashMap<String,Integer> freqmap = new HashMap<String,Integer>();
+		
+		for (String s : seq)
+		{
+			for (int i=0; i<s.length(); i++)
+			{
+				String epitope = s.charAt(i)+"";
+				if (!(freqmap.containsKey(s.charAt(i)+""))) {
+					freqmap.put(epitope, 1);
+				}
+				else {
+					freqmap.put(epitope, freqmap.get(epitope) + 1);
+				}
+			}
+		}
+
+		System.out.println(freqmap);
+		for (String key : freqmap.keySet())
+		{
+			graph.getNodeFromEpitope(key).setFreq(freqmap.get(key));
+		}
+
+	}
+	
 	public ArrayList<String> cocktail(EpigraphBaseGraph graph, int m, int k)
     {
     	//HashSet<String> cocktail = new HashSet<String>();
@@ -18,11 +45,13 @@ public class CocktailAlgorithm
 		for (int i=0; i<m; i++)
     	{
     		//compute next antigen sequence
-    		String q = epi.optimalPath(graph, graph.getNode(0), graph.getNode(4));
+    		String q = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
+    		System.out.println(q);
     		cocktail.add(q);
     		for(int j=0;j<q.length();j++)
 			{
-				old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
+				if (!(old_f.containsKey(graph.getNodeFromEpitope(q.charAt(j)+""))))
+					old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
 				graph.getNodeFromEpitope(q.charAt(j)+"").setFreq(0);
 			}
     	}
@@ -35,12 +64,21 @@ public class CocktailAlgorithm
 			for (int i = 0; i<m; i++)
 			{
 				String q = cocktail.remove(i);
+				System.out.println(q);
 				for (int j=0; j<q.length(); j++)
 				{
+					
+					
 					Node n = graph.getNodeFromEpitope(q.charAt(j)+"");
+					
+					
+					//System.out.println("NAME" + n.getEpitope());
+					//System.out.println(n.getFreq());
+					//System.out.println("OLD" + old_f.get(n));
 					n.setFreq(old_f.get(n));
+				
 				}
-				String repq = epi.optimalPath(graph, graph.getNode(0), graph.getNode(4));
+				String repq = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
 				cocktail.add(i,repq);
 				for(int j=0;j<q.length();j++)
 				{
@@ -91,7 +129,29 @@ public class CocktailAlgorithm
 
 	public static void main(String[] args)
 	{
-		int v = 5, e = 5;
+		ArrayList<String> seq = new ArrayList<String>();
+//		seq.add("abcde");
+//		seq.add("afgie");
+//		seq.add("fgbde");
+//		seq.add("fghej");
+//		seq.add("bde");
+//		seq.add("cde");
+//		seq.add("cde");
+//		seq.add("de");
+//		seq.add("e");
+		seq.add("abcdef");
+		seq.add("bijkl");
+		seq.add("cjel");
+		seq.add("ghcjkl");
+		seq.add("bcjkl");
+		seq.add("ghijkf");
+		seq.add("gbi");
+		seq.add("bijk");
+		seq.add("gbidkf");
+		seq.add("ghijkl");
+		int v = 12, e = 20;
+		//int v = 5, e = 5;
+		//int v = 10, e = 12;
 		ArrayList<Node> ar = new ArrayList<>();
 		HashMap<Node, ArrayList<Node>> m = new HashMap<>();
 		for(int i=0;i<v;i++)
@@ -105,16 +165,53 @@ public class CocktailAlgorithm
 			m.put(ar.get(i), new ArrayList<>());
 		}
 
-		m.get(ar.get(0)).add(ar.get(1));
-		m.get(ar.get(0)).add(ar.get(2));
-		m.get(ar.get(1)).add(ar.get(3));
-		m.get(ar.get(2)).add(ar.get(3));
-		m.get(ar.get(3)).add(ar.get(4));
+//		m.get(ar.get(0)).add(ar.get(1));
+//		m.get(ar.get(0)).add(ar.get(2));
+//		m.get(ar.get(1)).add(ar.get(3));
+//		m.get(ar.get(2)).add(ar.get(3));
+//		m.get(ar.get(3)).add(ar.get(4));
 
+//		m.get(ar.get(0)).add(ar.get(1));
+//		m.get(ar.get(0)).add(ar.get(5));
+//		m.get(ar.get(1)).add(ar.get(2));
+//		m.get(ar.get(1)).add(ar.get(3));
+//		m.get(ar.get(2)).add(ar.get(3));
+//		m.get(ar.get(3)).add(ar.get(4));
+//		m.get(ar.get(4)).add(ar.get(9));
+//		m.get(ar.get(5)).add(ar.get(6));
+//		m.get(ar.get(6)).add(ar.get(1));
+//		m.get(ar.get(6)).add(ar.get(7));
+//		m.get(ar.get(6)).add(ar.get(8));
+//		m.get(ar.get(7)).add(ar.get(4));
+//		m.get(ar.get(8)).add(ar.get(4));
+		
+		m.get(ar.get(0)).add(ar.get(1));
+		m.get(ar.get(0)).add(ar.get(7));
+		m.get(ar.get(1)).add(ar.get(2));
+		m.get(ar.get(1)).add(ar.get(8));
+		m.get(ar.get(2)).add(ar.get(3));
+		m.get(ar.get(2)).add(ar.get(9));
+		m.get(ar.get(3)).add(ar.get(4));
+		m.get(ar.get(3)).add(ar.get(10));
+		m.get(ar.get(4)).add(ar.get(5));
+		m.get(ar.get(4)).add(ar.get(11));
+		m.get(ar.get(6)).add(ar.get(7));
+		m.get(ar.get(6)).add(ar.get(1));
+		m.get(ar.get(7)).add(ar.get(2));
+		m.get(ar.get(7)).add(ar.get(8));
+		m.get(ar.get(8)).add(ar.get(3));
+		m.get(ar.get(8)).add(ar.get(9));
+		m.get(ar.get(9)).add(ar.get(4));
+		m.get(ar.get(9)).add(ar.get(10));
+		m.get(ar.get(10)).add(ar.get(5));
+		m.get(ar.get(10)).add(ar.get(11));
+		
+		
 		EpigraphBaseGraph in = new EpigraphBaseGraph(v, e, ar, m);
 
 		CocktailAlgorithm ca = new CocktailAlgorithm();
-		ArrayList<String> cockt = ca.cocktail(in, 2, 0);
+		ca.computeFreq(seq, in);
+		ArrayList<String> cockt = ca.cocktail(in, 5, 9);
 		System.out.println(cockt);
 //		ArrayList<EpigraphBaseNode> path = ea.optimalPath(in, in.getNode(0), in.getNode(4));
 //		for(int i=0;i<path.size();i++)

@@ -20,6 +20,14 @@ public abstract class Graph
         adjacency_list = edge;
         vertices = vert;
     }
+    
+    public Graph(Graph g)
+    {
+    	this.num_vertices = g.num_vertices;
+    	this.num_edges = g.num_edges;
+    	this.adjacency_list = g.adjacency_list;
+    	this.vertices = g.vertices;
+    }
 
     public HashMap<Node, ArrayList<Node>> getAdjacency_list()
     {
@@ -41,9 +49,26 @@ public abstract class Graph
         adjacency_list.get(a).remove(b);
     }
 
+    public boolean hasNode(Node a)
+    {
+    	return vertices.contains(a);
+    }
+    
     public boolean hasEdge(Node a, Node b)
     {
         return adjacency_list.get(a).contains(b);
+    }
+    
+    public void removeFromGraph(ArrayList<Node> v)
+    {
+    	for (Node n : v)
+    	{
+    		vertices.remove(n);
+    		num_vertices -= 1;
+    		ArrayList<Node> al = adjacency_list.get(n);
+    		num_edges -= al.size();
+    		adjacency_list.remove(n);
+    	}
     }
 
     //Returns the vertices adjacent to vertex {@code v}
@@ -78,4 +103,17 @@ public abstract class Graph
     {
         return num_edges;
     }
+    
+    @Override
+    public String toString()
+    {
+    	ArrayList<String> output = new ArrayList<String>();
+    	for (Node n : vertices){
+    		String s = n.getEpitope();
+    		s += "--> " + adjacency_list.get(n);
+    		output.add(s);
+    	}
+    	return output.toString();
+    }
+    
 }
