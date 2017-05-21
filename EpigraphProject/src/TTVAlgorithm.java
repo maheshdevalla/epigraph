@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 
 public class TTVAlgorithm {
 	public void computeFreq(ArrayList<String> seq, EpigraphBaseGraph graph)
@@ -39,56 +41,78 @@ public class TTVAlgorithm {
 		ArrayList<String> q_list = new ArrayList<>();
 		ArrayList<String> ttv_list = new ArrayList<String>();
 		ttv_list.add(q0);
-		String q1 = "abcde"; // m=2;
-		q_list.add(q1);
-		ArrayList<ArrayList<String>> S = new ArrayList<>();
-
-		for(int i=1;i<m;i++)
+		for (int i=0; i<m; i++)
 		{
-			ArrayList<String> temp = new ArrayList<>();
-			S.add(temp);
+			Random rand = new Random();
+			int q_val = rand.nextInt(seq.size());
+			q_list.add(seq.get(q_val));
 		}
-
-		for(int i=0;i<seq.size();i++)
+		//String q1 = "abcde"; // m=2;
+		//q_list.add(q1);
+		ArrayList<String> old_ttv_list = new ArrayList<String>();
+		while (!(ttv_list.equals(old_ttv_list)))
 		{
-			for(int j=0;j<m;j++)
-				coverage[i][j] = 0;
+			old_ttv_list = new ArrayList<String>(ttv_list);
+			//Collections.sort(old_ttv_list);
+			ttv_list = new ArrayList<String>();
+			ttv_list.add(q0);
+			ArrayList<ArrayList<String>> S = new ArrayList<>();
+	
+			for(int i=1;i<m;i++)
+			{
+				ArrayList<String> temp = new ArrayList<>();
+				S.add(temp);
+			}
+	
+			for(int i=0;i<seq.size();i++)
+			{
+				for(int j=0;j<m;j++)
+					coverage[i][j] = 0;
+			}
+	
+			int n;
+			for(int i=0;i<seq.size();i++)
+			{
+				for(n=1;n<m;n++)
+				{
+					coverage[i][n] = function_u(q0, q_list, seq.get(i), n);
+				}
+				n = getMaxValue(coverage, i, m);
+				S.get(n-1).add(seq.get(i));
+			}
+			
+			for (int i=1; i<m; i++)
+			{
+				ArrayList<Node> v = graph.getVertices();
+				ArrayList<String> e = new ArrayList<String>();
+				for (int j=0; j<v.size(); j++)
+				{
+					e.add(j, v.get(j).getEpitope());
+				}
+				for (int j=0; j<e.size(); j++)
+				{
+					int freq = computeOneFreq(e.get(j), S.get(i-1), seq);
+					graph.getNodeFromEpitope(e.get(j)).setFreq(freq);
+				}
+				ArrayList<Node> vertices = graph.getVertices();
+				for (int j = 0; j<q0.length(); j++)
+				{
+					Node node = graph.getNodeFromEpitope(q0.charAt(j)+"");
+					if (vertices.contains(node)) 
+						graph.getNodeFromEpitope(q0.charAt(j)+"").setFreq(0);
+				}
+				ttv_list.add(epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getVertices().size()-1)));
+				
+			}
+//			System.out.println(coverage);
+			//for(int[] temp:coverage){
+				//for(int temp1: temp){
+					//System.out.println(temp1);
+				//}
+			//}
+			System.out.println(S);
+			//Collections.sort(ttv_list);
 		}
-
-		int n;
-		for(int i=0;i<seq.size();i++)
-		{
-			for(n=1;n<m;n++)
-			{
-				coverage[i][n] = function_u(q0, q_list, seq.get(i), n);
-			}
-			n = getMaxValue(coverage, i, m);
-			S.get(n-1).add(seq.get(i));
-		}
-		
-		for (int i=1; i<m; i++)
-		{
-			ArrayList<Node> v = graph.getVertices();
-			ArrayList<String> e = new ArrayList<String>();
-			for (int j=0; j<v.size(); j++)
-			{
-				e.add(j, v.get(j).getEpitope());
-			}
-			for (int j=0; j<e.size(); j++)
-			{
-				int freq = computeOneFreq(e.get(j), S.get(i-1), seq);
-				graph.getNodeFromEpitope(e.get(j)).setFreq(freq);
-			}
-			ArrayList<Node> vertices = graph.getVertices();
-			for (int j = 0; j<q0.length(); j++)
-			{
-				Node node = graph.getNodeFromEpitope(q0.charAt(j)+"");
-				if (vertices.contains(node)) 
-					graph.getNodeFromEpitope(q0.charAt(j)+"").setFreq(0);
-			}
-			ttv_list.add(epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getVertices().size()-1)));
-		}
-		
 		/*for (int i=1; i<m; i++)
 		{
 			EpigraphBaseGraph clustergraph = makeClusterGraph(S.get(i-1), graph);
@@ -113,7 +137,7 @@ public class TTVAlgorithm {
 			ttv_list.add(i, epi.optimalPath(clustergraph, clustergraph.getNode(0), clustergraph.getNode(clustergraph.getVertices().size()-1)));
 		}*/
 		
-
+		
 		return ttv_list;
     }
 	
@@ -210,7 +234,7 @@ public class TTVAlgorithm {
 		//CocktailAlgorithm ca = new CocktailAlgorithm();
 		TTVAlgorithm ta = new TTVAlgorithm();
 		ta.computeFreq(seq, in);
-		ArrayList<String> ttv = ta.ttvalgo(in, 2, 9, seq);
+		ArrayList<String> ttv = ta.ttvalgo(in, 4, 9, seq);
 		System.out.println(ttv);
 //		ArrayList<EpigraphBaseNode> path = ea.optimalPath(in, in.getNode(0), in.getNode(4));
 //		for(int i=0;i<path.size();i++)
