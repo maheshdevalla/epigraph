@@ -3,7 +3,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
+/*
+ * CS89/189 Final Project
+ * Created and Implemented by Arvind Suresh, Reshmi Suresh
+ * Debugging and Testing by Arvind Suresh, Mahesh Devalla
+ */
 public class TTVAlgorithm {
+	//method to compute frequency of an epitope in a sequence set and assign these frequencies
+	//to nodes in the epigraph
 	public void computeFreq(ArrayList<String> seq, EpigraphBaseGraph graph)
 	{
 		double total = seq.size();
@@ -27,21 +34,26 @@ public class TTVAlgorithm {
 		for (String key : freqmap.keySet())
 		{
 			EpigraphBaseNode n = graph.getNodeFromEpitope(key);
-			n.setFreq((int)(freqmap.get(key)*100));
+			n.setFreq((int)(freqmap.get(key)*100)); //converts double to integer by multiplying 100
 		}
 
 	}
 	
+	//TTV Algorithm - Algorithm 4 from Epigraph Paper
 	public ArrayList<String> ttvalgo(EpigraphBaseGraph graph, int m, int k, ArrayList<String> seq)
     {
-		int[][] coverage = new int[seq.size()][m];
+		int[][] coverage = new int[seq.size()][m]; //stores the coverage calculation of each sequence-sequence pair
 //		ArrayList<String> cocktail = new ArrayList<String>();
 		EpigraphAlgorithm epi = new EpigraphAlgorithm();
+		
+		//creates the first antigen sequence (q0) that will be in every vaccine
 		String q0 = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
-		//select random sequences (m-1)
-		ArrayList<String> q_list = new ArrayList<>();
-		ArrayList<String> ttv_list = new ArrayList<String>();
+		
+		
+		ArrayList<String> q_list = new ArrayList<>(); //stores temporary chosen q's
+		ArrayList<String> ttv_list = new ArrayList<String>(); // keeps track of the final antigens
 		ttv_list.add(q0);
+		//select random sequences (m-1)
 		for (int i=0; i<m; i++)
 		{
 			Random rand = new Random();
@@ -50,27 +62,34 @@ public class TTVAlgorithm {
 		}
 		//String q1 = "abcde"; // m=2;
 		//q_list.add(q1);
-		ArrayList<String> old_ttv_list = new ArrayList<String>();
+		ArrayList<String> old_ttv_list = new ArrayList<String>(); //stores the old TTV for optimization purposes
+		
+		//outside loop is for iterative refinement and optimization
 		while (!(ttv_list.equals(old_ttv_list)))
 		{
 			old_ttv_list = new ArrayList<String>(ttv_list);
 			//Collections.sort(old_ttv_list);
 			ttv_list = new ArrayList<String>();
 			ttv_list.add(q0);
+			
+			//this list of lists stores all the individual clusters based on epitope similarity
 			ArrayList<ArrayList<String>> S = new ArrayList<>();
 	
+			//initializes S (list of lists) above
 			for(int i=1;i<m;i++)
 			{
 				ArrayList<String> temp = new ArrayList<>();
 				S.add(temp);
 			}
 	
+			//initializes the coverage matrix
 			for(int i=0;i<seq.size();i++)
 			{
 				for(int j=0;j<m;j++)
 					coverage[i][j] = 0;
 			}
 	
+			//calculates the coverage for each sequence compared to q0 + q(n) and adds this to matrix
 			int n;
 			for(int i=0;i<seq.size();i++)
 			{
@@ -78,10 +97,12 @@ public class TTVAlgorithm {
 				{
 					coverage[i][n] = function_u(q0, q_list, seq.get(i), n);
 				}
+				//maximum value (best epitope similarity sequence) is added to corresponding cluster for q(n)
 				n = getMaxValue(coverage, i, m);
 				S.get(n-1).add(seq.get(i));
 			}
 			
+			//recomputes frequencies for each cluster based on frequency of each eptiope in the cluster
 			for (int i=1; i<m; i++)
 			{
 				ArrayList<Node> v = graph.getVertices();
@@ -96,12 +117,14 @@ public class TTVAlgorithm {
 					graph.getNodeFromEpitope(e.get(j)).setFreq(freq);
 				}
 				ArrayList<Node> vertices = graph.getVertices();
+				//sets the epitopes from q0 to a frequency of zero again
 				for (int j = 0; j<q0.length(); j++)
 				{
 					Node node = graph.getNodeFromEpitope(q0.charAt(j)+"");
 					if (vertices.contains(node)) 
 						graph.getNodeFromEpitope(q0.charAt(j)+"").setFreq(0);
 				}
+				//generates a new antigen sequence for each cluster and adds it to the final TTV
 				ttv_list.add(epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getVertices().size()-1)));
 				
 			}
@@ -142,6 +165,7 @@ public class TTVAlgorithm {
 		return ttv_list;
     }
 	
+	//function computes the frequency of an epitope in a particular cluster
 	private int computeOneFreq(String epitope, ArrayList<String> cluster, ArrayList<String> seq)
 	{
 		double val = 0;
@@ -152,6 +176,7 @@ public class TTVAlgorithm {
 		return (int)((val*seq.size())*100);
 	}
 
+	//function for later heuristic to cluster the graph based on eptiope similarity to create sub-clade epigraphs
 	private EpigraphBaseGraph makeClusterGraph(ArrayList<String> cluster, EpigraphBaseGraph graph)
 	{
 		EpigraphBaseGraph clustergraph = new EpigraphBaseGraph(graph);
@@ -166,6 +191,8 @@ public class TTVAlgorithm {
 		clustergraph.removeFromGraph(badvertices);
 		return clustergraph;
 	}
+	
+	//the argmax function that returns the index of maximum value for a row in the coverage matrix
 	private int getMaxValue(int[][] coverage, int i, int m)
 	{
 		int val = 0, return_val = 0;
@@ -180,6 +207,7 @@ public class TTVAlgorithm {
 		return return_val;
 	}
 
+	//function u calculates frequency of an epitope based on whether it appears in q0 or q(n) at least once
 	private int function_u(String q0, ArrayList<String> q_list, String s, int n)
 	{
 		int val = 0;
@@ -198,17 +226,20 @@ public class TTVAlgorithm {
 	public static void main(String[] args)
 	{
 		ArrayList<String> seq = new ArrayList<String>();
+		//Test Case #1
 //		seq.add("abcde");
 //		seq.add("afgie");
 //		seq.add("fgbde");
 //		seq.add("fghej");
-		
+	
+		//Test Case #0
 //		seq.add("bde");
 //		seq.add("cde");
 //		seq.add("cde");
 //		seq.add("de");
 //		seq.add("e");
 		
+		//Test Case #2
 		seq.add("abcdef");
 		seq.add("bijkl");
 		seq.add("cjel");
@@ -220,13 +251,18 @@ public class TTVAlgorithm {
 		seq.add("gbidkf");
 		seq.add("ghijkl");
 		
+		//Test Case #0
 //		int v = 5, e = 5;
+		//Test Case #2
 		int v = 12, e = 20;
+		//Test Case #1
 		//int v = 10, e = 12;
 		ArrayList<Node> ar = new ArrayList<>();
 		HashMap<Node, ArrayList<Node>> m = new HashMap<>();
+	
 		for(int i=0;i<v;i++)
 		{
+			//creates new Epigraph nodes with alphabet characters representing the eptiopes for testing
 			EpigraphBaseNode temp = new EpigraphBaseNode(i, (String) (((char) ('a'+i)) + ""), i);
 			ar.add(temp);
 		}
@@ -236,6 +272,7 @@ public class TTVAlgorithm {
 			m.put(ar.get(i), new ArrayList<>());
 		}
 
+		//Test Case #1
 //		m.get(ar.get(0)).add(ar.get(1));
 //		m.get(ar.get(0)).add(ar.get(5));
 //		m.get(ar.get(1)).add(ar.get(2));
@@ -250,12 +287,14 @@ public class TTVAlgorithm {
 //		m.get(ar.get(7)).add(ar.get(4));
 //		m.get(ar.get(8)).add(ar.get(4));
 		
+		//Test Case #0
 //		m.get(ar.get(0)).add(ar.get(1));
 //		m.get(ar.get(0)).add(ar.get(2));
 //		m.get(ar.get(1)).add(ar.get(3));
 //		m.get(ar.get(2)).add(ar.get(3));
 //		m.get(ar.get(3)).add(ar.get(4));
 		
+		//Test Case #2
 		m.get(ar.get(0)).add(ar.get(1));
 		m.get(ar.get(0)).add(ar.get(7));
 		m.get(ar.get(1)).add(ar.get(2));
