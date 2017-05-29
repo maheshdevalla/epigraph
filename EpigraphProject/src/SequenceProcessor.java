@@ -228,7 +228,7 @@ public class SequenceProcessor {
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		SequenceProcessor sp = new SequenceProcessor();
-		File file = new File("/Users/Arvind/Desktop/test5.fasta");
+		File file = new File("test5.fasta");
 		sp.process(file);
 		EpigraphBaseGraph epigraph = sp.createGraph(sp.sequences, sp.seqlen, 9);
 		//System.out.println(epigraph);
