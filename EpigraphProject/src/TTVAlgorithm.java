@@ -48,7 +48,7 @@ public class TTVAlgorithm {
 		
 		//creates the first antigen sequence (q0) that will be in every vaccine
 		String q0 = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
-		
+		ArrayList<EpigraphBaseNode> q0path = epi.getPath();
 		
 		ArrayList<String> q_list = new ArrayList<>(); //stores temporary chosen q's
 		ArrayList<String> ttv_list = new ArrayList<String>(); // keeps track of the final antigens
@@ -105,7 +105,7 @@ public class TTVAlgorithm {
 			//recomputes frequencies for each cluster based on frequency of each eptiope in the cluster
 			for (int i=1; i<m; i++)
 			{
-				ArrayList<Node> v = graph.getVertices();
+				ArrayList<NodeAligned> v = graph.getVertices();
 				ArrayList<String> e = new ArrayList<String>();
 				for (int j=0; j<v.size(); j++)
 				{
@@ -116,16 +116,21 @@ public class TTVAlgorithm {
 					int freq = computeOneFreq(e.get(j), S.get(i-1), seq);
 					graph.getNodeFromEpitope(e.get(j)).setFreq(freq);
 				}
-				ArrayList<Node> vertices = graph.getVertices();
+				ArrayList<NodeAligned> vertices = graph.getVertices();
 				//sets the epitopes from q0 to a frequency of zero again
-				for (int j = 0; j<q0.length(); j++)
-				{
-					Node node = graph.getNodeFromEpitope(q0.charAt(j)+"");
-					if (vertices.contains(node)) 
-						graph.getNodeFromEpitope(q0.charAt(j)+"").setFreq(0);
+				for (EpigraphBaseNode node : q0path) {
+					node.setFreq(0);
 				}
+//				for (int j = 0; j<q0.length(); j++)
+//				{
+//					NodeAligned node = graph.getNodeFromEpitope(mySubString(q0, j, 1));
+//					if (vertices.contains(node)) 
+//						graph.getNodeFromEpitope(mySubString(q0, j, 1)).setFreq(0);
+//				}
 				//generates a new antigen sequence for each cluster and adds it to the final TTV
-				ttv_list.add(epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getVertices().size()-1)));
+				Random random = new Random();
+				int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
+				ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getVertices().size()-1)));
 				
 			}
 //			System.out.println(coverage);
@@ -134,7 +139,11 @@ public class TTVAlgorithm {
 					//System.out.println(temp1);
 				//}
 			//}
-			System.out.println(S);
+			System.out.println(q0);
+			for (ArrayList<String> cluster: S) {
+				System.out.println(cluster);
+			}
+			//System.out.println(S);
 			//Collections.sort(ttv_list);
 		}
 		/*for (int i=1; i<m; i++)
@@ -176,14 +185,19 @@ public class TTVAlgorithm {
 		return (int)((val*seq.size())*100);
 	}
 
+	String mySubString(String myString, int start, int length)
+	{
+		return myString.substring(start, Math.min(start + length, myString.length()));
+	}
+
 	//function for later heuristic to cluster the graph based on eptiope similarity to create sub-clade epigraphs
 	private EpigraphBaseGraph makeClusterGraph(ArrayList<String> cluster, EpigraphBaseGraph graph)
 	{
 		EpigraphBaseGraph clustergraph = new EpigraphBaseGraph(graph);
-		ArrayList<Node> badvertices = new ArrayList<Node>();
+		ArrayList<NodeAligned> badvertices = new ArrayList<NodeAligned>();
 		for (String c: cluster){
 			for (int i=0; i<c.length(); i++){
-				Node cnode = graph.getNodeFromEpitope(c.charAt(i)+"");
+				NodeAligned cnode = graph.getNodeFromEpitope(c.charAt(i)+"");
 				if (!(graph.hasNode(cnode))) 
 					badvertices.add(cnode);
 			}
@@ -257,13 +271,13 @@ public class TTVAlgorithm {
 		int v = 12, e = 20;
 		//Test Case #1
 		//int v = 10, e = 12;
-		ArrayList<Node> ar = new ArrayList<>();
-		HashMap<Node, ArrayList<Node>> m = new HashMap<>();
+		ArrayList<NodeAligned> ar = new ArrayList<>();
+		HashMap<NodeAligned, ArrayList<NodeAligned>> m = new HashMap<>();
 	
 		for(int i=0;i<v;i++)
 		{
 			//creates new Epigraph nodes with alphabet characters representing the eptiopes for testing
-			EpigraphBaseNode temp = new EpigraphBaseNode(i, (String) (((char) ('a'+i)) + ""), i);
+			EpigraphBaseNode temp = new EpigraphBaseNode(i, (String) (((char) ('a'+i)) + ""), i, 0);
 			ar.add(temp);
 		}
 

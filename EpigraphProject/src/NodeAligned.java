@@ -3,17 +3,19 @@ import java.util.Set;
 /**
  * Created by reshmi on 5/14/17.
  */
-public abstract class Node
+public abstract class NodeAligned
 {
     private int freq;
     private String epitope;
     private int id;
+    private int position;
 
-    Node(int f, String e, int v)
+    NodeAligned(int f, String e, int v, int p)
     {
         freq = f;
         epitope = e;
         id = v;
+        position = p;
     }
 
     int getFreq()
@@ -24,6 +26,16 @@ public abstract class Node
     void setFreq(int f)
     {
         freq = f;
+    }
+    
+    int getPos()
+    {
+    	return position;
+    }
+    
+    void setPos(int p)
+    {
+    	position = p;
     }
 
     String getEpitope()

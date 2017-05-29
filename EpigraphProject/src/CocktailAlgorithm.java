@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /*
@@ -40,6 +41,11 @@ public class CocktailAlgorithm
 		}
 
 	}
+
+	String mySubString(String myString, int start, int length)
+	{
+		return myString.substring(start, Math.min(start + length, myString.length()));
+	}
 	
 	//main cocktail algorithm method - Algorithm 3 in Epigraph paper
 	public ArrayList<String> cocktail(EpigraphBaseGraph graph, int m, int k)
@@ -50,62 +56,85 @@ public class CocktailAlgorithm
     	//Set<String> all_eptiopes = new HashSet<String>();
     	//ArrayList<String> qepitopes = new ArrayList<String>();
 		// keeps track of old frequencies so they can be reinstated later during iterative refinement/opimization
-		Map<Node,Integer> old_f = new HashMap<Node,Integer>(); 
+		Map<NodeAligned,Integer> old_f = new HashMap<NodeAligned,Integer>(); 
 		
 		//main for loop to create new antigen sequences
 		for (int i=0; i<m; i++)
     	{
     		//compute next antigen sequence
-    		String q = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
+			System.out.println(i);
+			Random random = new Random();
+			int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
+    		String q = epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getNum_vertices()-1));
     		System.out.println(q);
     		//adds new optimal path to the cocktail
     		cocktail.add(q);
-    		for(int j=0;j<q.length();j++)
-			{
-				//stores the old/previous frequency of the node
-    			if (!(old_f.containsKey(graph.getNodeFromEpitope(q.charAt(j)+""))))
-					old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
-				//sets the frequency of this node to zero
-				graph.getNodeFromEpitope(q.charAt(j)+"").setFreq(0);
-			}
+    		
+    		ArrayList<EpigraphBaseNode> visited = epi.getPath();
+    		for (EpigraphBaseNode n : visited) {
+    			if (!(old_f.containsKey(n))) {
+    				old_f.put(n, n.getFreq());
+    			}
+    			n.setFreq(0);
+    		}
+    		
+//    		for(int j=0;j<q.length();j++)
+//			{
+//				//stores the old/previous frequency of the node
+//    			if (!(old_f.containsKey(graph.getNodeFromEpitope(mySubString(q, j, 9))))) {
+//    				if (!(old_f.containsKey(graph.getNodeFromEpitope("-" + mySubString(q, j, 8))))) {
+//    				System.out.println(mySubString(q,j,9));
+//    				System.out.println(graph.getNodeFromEpitope(mySubString(q, j, 9)));
+//    				if (graph.getNodeFromEpitope(mySubString(q, j, 9)) != null)
+//    					old_f.put(graph.getNodeFromEpitope(mySubString(q, j, 9)), graph.getNodeFromEpitope(mySubString(q, j, 9)).getFreq());
+//    				else
+//    					old_f.put(graph.getNodeFromEpitope("-" + mySubString(q, j, 8)), graph.getNodeFromEpitope("-" + mySubString(q, j, 8)).getFreq());
+//    				}
+//    			}
+//					//sets the frequency of this node to zero
+//    			if (graph.getNodeFromEpitope(mySubString(q, j, 9)) != null)
+//    				graph.getNodeFromEpitope(mySubString(q, j, 9)).setFreq(0);
+//    			else
+//    				graph.getNodeFromEpitope("-" + mySubString(q, j, 8)).setFreq(0);
+//			}
     	}
 			
 		//HashSet<String> old_cocktail = new HashSet<String>();
 		ArrayList<String> old_cocktail = new ArrayList<String>(); //temporary storage variable for old cocktail
 		
 		//iterative refinement/optimization loop continue until convergence
-		while (!(cocktail.equals(old_cocktail)))
-		{
-			old_cocktail = new ArrayList<String>(cocktail); //copies the current cocktail
-			//removes each individual antigen sequence from the cocktail and refines it
-			for (int i = 0; i<m; i++)
-			{
-				String q = cocktail.remove(i);
-				System.out.println(q);
-				for (int j=0; j<q.length(); j++)
-				{
-					
-					//resets the frequency of each eptiope back to its original value
-					Node n = graph.getNodeFromEpitope(q.charAt(j)+"");
-					n.setFreq(old_f.get(n));
-					
-					//System.out.println("NAME" + n.getEpitope());
-					//System.out.println(n.getFreq());
-					//System.out.println("OLD" + old_f.get(n));
-					
-				
-				}
-				//recalculates a new antigen sequence for the cocktail
-				String repq = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
-				cocktail.add(i,repq);
-				for(int j=0;j<q.length();j++)
-				{
-					old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
-					//sets the frequency of these new epitopes to zero
-					graph.getNodeFromEpitope(q.charAt(j)+"").setFreq(0);
-				}
-			}
-		}
+//		while (!(cocktail.equals(old_cocktail)))
+//		{
+//			old_cocktail = new ArrayList<String>(cocktail); //copies the current cocktail
+//			//removes each individual antigen sequence from the cocktail and refines it
+//			for (int i = 0; i<m; i++)
+//			{
+//				String q = cocktail.remove(i);
+//				System.out.println(q);
+//				for (int j=0; j<q.length(); j++)
+//				{
+//
+//					//resets the frequency of each eptiope back to its original value
+//					Node n = graph.getNodeFromEpitope(q.charAt(j)+"");
+//					n.setFreq(old_f.get(n));
+//
+//					//System.out.println("NAME" + n.getEpitope());
+//					//System.out.println(n.getFreq());
+//					//System.out.println("OLD" + old_f.get(n));
+//
+//
+//				}
+//				//recalculates a new antigen sequence for the cocktail
+//				String repq = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
+//				cocktail.add(i,repq);
+//				for(int j=0;j<q.length();j++)
+//				{
+//					old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
+//					//sets the frequency of these new epitopes to zero
+//					graph.getNodeFromEpitope(q.charAt(j)+"").setFreq(0);
+//				}
+//			}
+//		}
 
 
 ////    		int qlen = q.length();
@@ -181,12 +210,12 @@ public class CocktailAlgorithm
 		//int v = 5, e = 5;
 		//Test Case #1
 		//int v = 10, e = 12;
-		ArrayList<Node> ar = new ArrayList<>();
-		HashMap<Node, ArrayList<Node>> m = new HashMap<>();
+		ArrayList<NodeAligned> ar = new ArrayList<>();
+		HashMap<NodeAligned, ArrayList<NodeAligned>> m = new HashMap<>();
 		for(int i=0;i<v;i++)
 		{
 			//creates specified number of nodes with alphabet characters as the epitopes for testing
-			EpigraphBaseNode temp = new EpigraphBaseNode(i, (String) (((char) ('a'+i)) + ""), i);
+			EpigraphBaseNode temp = new EpigraphBaseNode(i, (String) (((char) ('a'+i)) + ""), i, 0);
 			ar.add(temp);
 		}
 
