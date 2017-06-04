@@ -5,12 +5,12 @@ import java.util.Set;
  */
 public abstract class NodeAligned
 {
-    private int freq;
+    private double freq;
     private String epitope;
     private int id;
     private int position;
 
-    NodeAligned(int f, String e, int v, int p)
+    NodeAligned(double f, String e, int v, int p)
     {
         freq = f;
         epitope = e;
@@ -18,12 +18,12 @@ public abstract class NodeAligned
         position = p;
     }
 
-    int getFreq()
+    double getFreq()
     {
         return freq;
     }
 
-    void setFreq(int f)
+    void setFreq(double f)
     {
         freq = f;
     }

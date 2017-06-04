@@ -10,9 +10,13 @@ public class EpigraphAlgorithm
 	
 	public String optimalPath(EpigraphBaseGraph graph, EpigraphBaseNode begin, EpigraphBaseNode end)
     {
+        System.out.println("path1---"+graph.num_edges);
+        System.out.println("path2---"+begin);
+        System.out.println("path3---"+end);
+
         String output = new String();
         begin.setF(0);
-        System.out.println(graph.getNum_vertices());
+        //System.out.println(graph.getNum_vertices());
         for(int i=1;i<graph.getNum_vertices();i++)
         {
             EpigraphBaseNode n = graph.getNode(i);
@@ -20,7 +24,7 @@ public class EpigraphAlgorithm
             ArrayList<EpigraphBaseNode> predecessors = graph.getPredecessors(n);
             if (!predecessors.isEmpty())
             {
-            	int max_freq = getMaxFrequency(predecessors);
+            	double max_freq = getMaxFrequency(predecessors);
             	n.setF(n.getFreq() + max_freq);
             }
             else
@@ -32,7 +36,7 @@ public class EpigraphAlgorithm
 
         path = new ArrayList<>();
         path.add(end);
-        System.out.println("Start: " + path);
+        //System.out.println("Start: " + path);
         output = addToOutput(end.getEpitope(), output);
 //        output = end.getEpitope() + output;
         EpigraphBaseNode current_node = end;
@@ -58,7 +62,6 @@ public class EpigraphAlgorithm
                 break;
             }
         }
-
         return output;
     }
 
@@ -150,7 +153,7 @@ public class EpigraphAlgorithm
 
                 if (!predecessors.isEmpty())
                 {
-                    int max_freq = getMaxFrequency(predecessors);
+                    double max_freq = getMaxFrequency(predecessors);
                     n.setSpecificF_value(j, n.getFreq() + max_freq);
                 }
                 else
@@ -163,7 +166,7 @@ public class EpigraphAlgorithm
 
     public EpigraphBaseNode getNodeMaxF_value(ArrayList<EpigraphBaseNode> ar, int p, EpigraphBaseNode epigraphBaseNode)
     {
-        int val = ar.get(0).getSpecificF_value(p);
+        double val = ar.get(0).getSpecificF_value(p);
         EpigraphBaseNode node_val = ar.get(0);
         for(int i=1;i<ar.size();i++)
         {
@@ -180,7 +183,7 @@ public class EpigraphAlgorithm
 
     public EpigraphBaseNode getNodeMaxFrequency(ArrayList<EpigraphBaseNode> ar, EpigraphBaseNode begin)
     {
-        int val = ar.get(0).getF();
+        double val = ar.get(0).getF();
         EpigraphBaseNode node_val = ar.get(0);
         for(int i=1;i<ar.size();i++)
         {
@@ -195,9 +198,9 @@ public class EpigraphAlgorithm
         return node_val;
     }
 
-    public int getMaxFrequency(ArrayList<EpigraphBaseNode> ar)
+    public double getMaxFrequency(ArrayList<EpigraphBaseNode> ar)
     {
-        int val = ar.get(0).getFreq();
+        double val = ar.get(0).getFreq();
         for(int i=1;i<ar.size();i++)
         {
             if(ar.get(i).getFreq() > val)

@@ -5,41 +5,41 @@ import java.util.ArrayList;
  */
 public class EpigraphBaseNode extends NodeAligned
 {
-    private int F;
-    private ArrayList<Integer> F_values;
-    EpigraphBaseNode(int a, String b, int c, int p)
+    private double F;
+    private ArrayList<Double> F_values;
+    EpigraphBaseNode(double a, String b, int c, int p)
     {
         super(a, b, c, p);
         F = a;
         F_values = new ArrayList<>();
     }
 
-    int getF()
+    double getF()
     {
         return F;
     }
 
-    void setF(int val)
+    void setF(double val)
     {
         F = val;
     }
 
 
-    public ArrayList<Integer> getF_values() {
+    public ArrayList<Double> getF_values() {
         return F_values;
     }
 
-    public void setF_values(ArrayList<Integer> f_values)
+    public void setF_values(ArrayList<Double> f_values)
     {
         F_values = f_values;
     }
 
-    public void setSpecificF_value(int i, int val)
+    public void setSpecificF_value(int i, double val)
     {
         F_values.add(i, val);
     }
 
-    public Integer getSpecificF_value(int i)
+    public Double getSpecificF_value(int i)
     {
         return F_values.get(i);
     }

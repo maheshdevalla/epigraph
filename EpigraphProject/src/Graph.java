@@ -109,7 +109,8 @@ public abstract class Graph
     {
     	ArrayList<String> output = new ArrayList<String>();
     	for (NodeAligned n : vertices){
-    		String s = n.getEpitope();
+    		double f = n.getFreq();
+    		String s = "(" + n.getEpitope() + "," + f + ") ";
     		s += "--> " + adjacency_list.get(n);
     		output.add(s);
     	}

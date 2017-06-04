@@ -18,6 +18,7 @@ public class SequenceProcessor {
 	public ArrayList<String> sequences = new ArrayList<String>();
 	//public int seqlen = 0;
 	public ArrayList<Integer> seqlen = new ArrayList<Integer>();
+	public ArrayList<String> all_epitopes = new ArrayList<String>();
 	public int seqlenmax = 0;
 	
 	public void process(File file) throws FileNotFoundException, IOException
@@ -53,7 +54,7 @@ public class SequenceProcessor {
 		
 	}
 	
-	public EpigraphBaseGraph createGraph(ArrayList<String> seq, ArrayList<Integer> seqlen, int k)
+	public EpigraphBaseGraph createGraph(ArrayList<String> seq, ArrayList<Integer> seqlen, int k, int slnmax)
 	{
 		ArrayList<NodeAligned> nodes = new ArrayList<NodeAligned>();
 		HashMap<NodeAligned, ArrayList<NodeAligned>> edges = new HashMap<NodeAligned, ArrayList<NodeAligned>>();
@@ -100,9 +101,10 @@ public class SequenceProcessor {
 					//System.out.println(currPos);
 				}
 				epitopeList.get(i).add(newEpitope);
+				all_epitopes.add(newEpitope);
 			}
 		}
-		System.out.println(epitopeList);
+		//System.out.println(epitopeList);
 //			for (int j=0; j<seqlen-k; j++)
 //			{
 //				String original = s.substring(j, j+k);
@@ -138,7 +140,8 @@ public class SequenceProcessor {
 //			}
 		
 		//int j = 0;
-		for (int i=0; i < epitopeList.get(seqlenmax).size(); i++)
+		//seqlenmax = seqlen.get(0);
+		for (int i=0; i < epitopeList.get(slnmax).size(); i++)
 		{
 			freqMapList.add(new HashMap<String, Integer>());
 			for (int j=0; j < epitopeList.size(); j++)
@@ -221,16 +224,118 @@ public class SequenceProcessor {
 			//System.out.println(no.getEpitope());
 		//}
 		EpigraphBaseGraph epigraph = new EpigraphBaseGraph(numVertices, numEdges, nodes, edges);
+		System.out.println("grph"+epigraph.getNum_vertices());
 		return epigraph;
 		
 	}
 	
+	public void createImmunoFile(ArrayList<String> seqList) throws IOException {
+		List<String> newSeqList = new ArrayList<String>();
+		int id = 1;
+		for (String seq: seqList) {
+			String newSeq = "";
+			for(int i=0; i<seq.length(); i++) {
+				if (seq.charAt(i) != '-') {
+					newSeq += seq.charAt(i) + "";
+				}
+			}
+			newSeqList.add(">" + id);
+			newSeqList.add(newSeq);
+			id++;
+		}
+		File file = new File("/Users/Arvind/Desktop/testi.fasta");
+		Path path = Paths.get("testi.fasta");
+		Files.write(path, newSeqList, Charset.forName("UTF-8"));
+	}
+	
+	public void pMHCImmunoFile(ArrayList<String> epitopes) throws IOException {
+		File file = new File("/Users/Arvind/Desktop/testp.fasta");
+		Path path = Paths.get("testp.fasta");
+		ArrayList<String> etr = new ArrayList<String>();
+		for (String e : epitopes) {
+			if (e.contains("-") || e.contains("X") || e.contains("*")) {
+				etr.add(e);
+			}
+		}
+		epitopes.removeAll(etr);
+		Files.write(path, epitopes, Charset.forName("UTF-8"));
+	}
+	
+	public void rescore(File file, EpigraphBaseGraph epigraph) throws FileNotFoundException, IOException {
+		HashMap<String, Double> immunoscore = new HashMap<String, Double>();
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+		    String line;
+		    while ((line = br.readLine()) != null) {
+		    	String[] val = line.split(",");
+		    	immunoscore.put(val[0], Double.parseDouble(val[1]));
+		    }
+		}
+		
+		for (NodeAligned n : epigraph.getVertices()) {
+			String epitope = n.getEpitope();
+			if (immunoscore.containsKey(epitope)) {
+				n.setFreq((double)(n.getFreq()) * immunoscore.get(epitope));
+			}
+		}
+		
+		
+	}
+	
+	
+	
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		SequenceProcessor sp = new SequenceProcessor();
-		File file = new File("test5.fasta");
+		File file = new File("/Users/Arvind/Desktop/test2.fasta");
 		sp.process(file);
-		EpigraphBaseGraph epigraph = sp.createGraph(sp.sequences, sp.seqlen, 9);
+		EpigraphBaseGraph epigraph = sp.createGraph(sp.sequences, sp.seqlen, 9, sp.seqlenmax);
+		
+		//System.out.println(epigraph);
+		//sp.createImmunoFile(sp.sequences);
+		//sp.pMHCImmunoFile(sp.all_epitopes);
+		
+		File ifile = new File("/Users/Arvind/Desktop/test2immuno.csv");
+		sp.rescore(ifile, epigraph);
+		System.out.println(epigraph);
+		
+//		TTVAlgorithm tta = new TTVAlgorithm();
+//		HashMap<String, ArrayList<String>> clusters = TTVAlgorithm.makeClusterMap(file);
+//		HashMap<String, EpigraphBaseGraph> clustergraphs = new HashMap<String, EpigraphBaseGraph>();
+//		//System.out.println(clustergraphs);
+//		ArrayList<Integer> cseqlen = new ArrayList<Integer>();
+//		SequenceProcessor sp = new SequenceProcessor();
+//
+//		int seqlenmax = 0;
+//		for (String key : clusters.keySet()) {
+//			ArrayList<String> seqs = clusters.get(key);
+//			int counter = 0;
+//			for (String seq : seqs) {
+//				//System.out.println(seq);
+//				//System.out.println(seq.length());
+//				cseqlen.add(seq.length());
+//				if (seq.length() > seqlenmax)
+//					seqlenmax = counter;
+//				counter++;
+//			}
+//			//System.out.println(key + " = " + seqs);
+////			System.out.println(cseqlen);
+//			clustergraphs.put(key, sp.createGraph(seqs, cseqlen, 9, seqlenmax));
+//			System.out.println("grph-------"+clustergraphs.get(key).getNum_edges());
+//		}
+//		
+//		
+//		for (String key : clustergraphs.keySet()) {
+//			EpigraphAlgorithm ea = new EpigraphAlgorithm();
+//			System.out.println("grph2220-------"+clustergraphs.get(key).getNum_edges());
+//
+//			System.out.println("initnode---"+clustergraphs.get(key).getNum_vertices());
+//			String op = ea.optimalPath(clustergraphs.get(key), clustergraphs.get(key).getNode(0), clustergraphs.get(key).getNode(clustergraphs.get(key).getNum_vertices()-1));
+////			System.out.println(op);
+//		}
+		
+		
+		
+	
 		//System.out.println(epigraph);
 //		TTVAlgorithm ta = new TTVAlgorithm();
 //		ArrayList<String> ttv = ta.ttvalgo(epigraph, 3, 9, sp.sequences);
@@ -243,26 +348,41 @@ public class SequenceProcessor {
 		
 		
 //		CocktailAlgorithm ca = new CocktailAlgorithm();
-//		ArrayList<String> cockt = ca.cocktail(epigraph, 2, 9);
+//		ArrayList<String> cockt = ca.cocktail(epigraph, 2, 9, (double)sp.sequences.size());
 //		//System.out.println(cockt); //final cocktail output
 //		System.out.println();
+//		for (int i=0; i<cockt.size(); i++) {
+//			System.out.println(cockt.get(i));
+//			System.out.println(ca.coverageset.get(i));
+//		}
+//		for (NodeAligned n : epigraph.getVertices()) {
+//			System.out.println(n.getFreq());
+//		}
+		
 //		for (String s : cockt) {
 //			System.out.println(s);
 //		}
-		//System.out.println(epigraph);
+//		System.out.println(epigraph);
 		
-		EpigraphAlgorithm ea = new EpigraphAlgorithm();
-		Random random = new Random();
-		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
-		int numOutput = 3;
-		for (int i=0; i<numOutput; i++) {
-			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
-			begin_nodes.add(epigraph.getNode(start));
-		}
-		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
-        for (String s : op1) {
-        	System.out.println(s);
-        }
+//		EpigraphAlgorithm ea = new EpigraphAlgorithm();
+//		Random random = new Random();
+//		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
+//		int numOutput = 3;
+//		for (int i=0; i<numOutput; i++) {
+//			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
+//			begin_nodes.add(epigraph.getNode(start));
+//		}
+//		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
+//        for (String s : op1) {
+//        	System.out.println(s);
+//        }
+//		
+//		for(int i=0; i<epigraph.getNum_vertices(); i++)
+//		{
+//			System.out.println("epigraph.getNode(i) = " + epigraph.getNode(i));
+//			if (epigraph.getNode(i).getFreq() > 20) 
+//				System.out.println("epigraph.getNode(i).getFreq() = " + epigraph.getNode(i).getFreq());
+//		}
 	
 	}
 }
