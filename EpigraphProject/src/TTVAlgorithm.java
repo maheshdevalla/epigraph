@@ -16,6 +16,8 @@ import java.util.Random;
 public class TTVAlgorithm {
 	//method to compute frequency of an epitope in a sequence set and assign these frequencies
 	//to nodes in the epigraph
+	public ArrayList<Double> coverageset = new ArrayList<Double>();
+	
 	public void computeFreq(ArrayList<String> seq, EpigraphBaseGraph graph)
 	{
 		double total = seq.size();
@@ -54,7 +56,12 @@ public class TTVAlgorithm {
 		//creates the first antigen sequence (q0) that will be in every vaccine
 		String q0 = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
 		ArrayList<EpigraphBaseNode> q0path = epi.getPath();
-		
+		double q0score = 0.0;
+		for (NodeAligned n : q0path) {
+			q0score += (n.getFreq()/(double)(seq.size()));
+		}
+		q0score = q0score/(double)(q0path.size());
+		coverageset.add(q0score);
 		ArrayList<String> q_list = new ArrayList<>(); //stores temporary chosen q's
 		ArrayList<String> ttv_list = new ArrayList<String>(); // keeps track of the final antigens
 		ttv_list.add(q0);
@@ -107,7 +114,7 @@ public class TTVAlgorithm {
 				S.get(n-1).add(seq.get(i));
 			}
 			
-			//recomputes frequencies for each cluster based on frequency of each eptiope in the cluster
+			//recomputes frequencies for each cluster based on frequency of each epitope in the cluster
 			for (int i=1; i<m; i++)
 			{
 				ArrayList<NodeAligned> v = graph.getVertices();
@@ -118,7 +125,7 @@ public class TTVAlgorithm {
 				}
 				for (int j=0; j<e.size(); j++)
 				{
-					int freq = computeOneFreq(e.get(j), S.get(i-1), seq);
+					double freq = computeOneFreq(e.get(j), S.get(i-1), seq);
 					graph.getNodeFromEpitope(e.get(j)).setFreq(freq);
 				}
 				ArrayList<NodeAligned> vertices = graph.getVertices();
@@ -136,7 +143,20 @@ public class TTVAlgorithm {
 				Random random = new Random();
 				int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
 				ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getVertices().size()-1)));
-				
+				ArrayList<EpigraphBaseNode> path = epi.getPath();
+				//System.out.println("PATH = " + path);
+				double cscore = 0.0;
+				for (NodeAligned na : path) {
+					System.out.println("FREQ " + na.getFreq());
+					System.out.println("SIZE " + S.get(i-1).size());
+					if (S.get(i-1).size() != 0) {
+						cscore += (na.getFreq()/((double)S.get(i-1).size()));
+					} else {
+						cscore += 0;
+					}
+				}
+				cscore = (cscore/(double)(path.size()));
+	    		coverageset.add(cscore);
 			}
 //			System.out.println(coverage);
 			//for(int[] temp:coverage){
@@ -180,14 +200,16 @@ public class TTVAlgorithm {
     }
 	
 	//function computes the frequency of an epitope in a particular cluster
-	private int computeOneFreq(String epitope, ArrayList<String> cluster, ArrayList<String> seq)
+	private double computeOneFreq(String epitope, ArrayList<String> cluster, ArrayList<String> seq)
 	{
 		double val = 0;
 		for (String s : cluster)
 		{
 			if (s.contains(epitope)) val+=1;
 		}
-		return (int)((val*seq.size())*100);
+		//return (int)((val*seq.size())*100);
+		//return (val*seq.size());
+		return val;
 	}
 
 	String mySubString(String myString, int start, int length)
@@ -206,7 +228,7 @@ public class TTVAlgorithm {
 			String currSubclade = "";
 			
 			while ((line = br.readLine()) != null) {
-				if (line.contains(">Ref.")) {
+				if (line.contains(">")) {
 									
 					if (currSeq != null) { //if a sequence has been gathered for a subclade
 						if (clusters.containsKey(currSubclade)) { //if a cluster for the subclade exists

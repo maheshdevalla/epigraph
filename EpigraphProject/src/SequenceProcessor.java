@@ -261,7 +261,8 @@ public class SequenceProcessor {
 		Files.write(path, epitopes, Charset.forName("UTF-8"));
 	}
 	
-	public void rescore(File file, EpigraphBaseGraph epigraph) throws FileNotFoundException, IOException {
+	public HashMap<NodeAligned, Double> rescore(File file, EpigraphBaseGraph epigraph) throws FileNotFoundException, IOException {
+		//EpigraphBaseGraph newepi = new EpigraphBaseGraph(epigraph);
 		HashMap<String, Double> immunoscore = new HashMap<String, Double>();
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 		    String line;
@@ -271,33 +272,70 @@ public class SequenceProcessor {
 		    }
 		}
 		
+		HashMap<NodeAligned, Double> old_f = new HashMap<NodeAligned, Double>();
 		for (NodeAligned n : epigraph.getVertices()) {
 			String epitope = n.getEpitope();
+			old_f.put(n, n.getFreq());
 			if (immunoscore.containsKey(epitope)) {
 				n.setFreq((double)(n.getFreq()) * immunoscore.get(epitope));
 			}
 		}
 		
+		//return newepi;
+		return old_f;
 		
+		
+	}
+	
+	/*public static double calc_coverage(String sequence, EpigraphBaseGraph epigraph, int numSeq) {
+		double coverage = 0.0;
+		for (int i=0; i<sequence.length()-9; i++) {
+			String epitope = sequence.substring(i, i+9);
+			//System.out.println(epitope);
+			EpigraphBaseNode en = epigraph.getNodeFromEpitope(epitope);
+			System.out.println(en);
+			if (en != null) 
+				coverage += (en.getFreq()/(double)(numSeq));
+		}
+		coverage = (coverage/((double)(sequence.length()-9)));
+		return coverage;
+	}*/
+	
+	public static ArrayList<Double> calc_coverage(ArrayList<ArrayList<Double>> paths) {
+		ArrayList<Double> coverages = new ArrayList<Double>();
+		for (ArrayList<Double> path : paths) {
+			double coverage = 0.0;
+			for (Double d : path) {
+				coverage += d/2.0;
+			}
+			coverage = (coverage/(double)(path.size()));
+			coverages.add(coverage);
+		}
+		return coverages;
 	}
 	
 	
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
+		//input file
+		File file = new File("/Users/Arvind/Desktop/test3.fasta");
+		
+		//Creates the Epigraph - use for all algo and heuristics EXCEPT clustering heuristic
 		SequenceProcessor sp = new SequenceProcessor();
-		File file = new File("/Users/Arvind/Desktop/test2.fasta");
 		sp.process(file);
 		EpigraphBaseGraph epigraph = sp.createGraph(sp.sequences, sp.seqlen, 9, sp.seqlenmax);
 		
+		//Immunogenicity Heuristic
 		//System.out.println(epigraph);
 		//sp.createImmunoFile(sp.sequences);
 		//sp.pMHCImmunoFile(sp.all_epitopes);
 		
-		File ifile = new File("/Users/Arvind/Desktop/test2immuno.csv");
-		sp.rescore(ifile, epigraph);
-		System.out.println(epigraph);
+		//File ifile = new File("/Users/Arvind/Desktop/testoimmuno.csv");
 		
+		//System.out.println(epigraph);
+		
+		//Clustering Heuristic
 //		TTVAlgorithm tta = new TTVAlgorithm();
 //		HashMap<String, ArrayList<String>> clusters = TTVAlgorithm.makeClusterMap(file);
 //		HashMap<String, EpigraphBaseGraph> clustergraphs = new HashMap<String, EpigraphBaseGraph>();
@@ -320,41 +358,64 @@ public class SequenceProcessor {
 //			//System.out.println(key + " = " + seqs);
 ////			System.out.println(cseqlen);
 //			clustergraphs.put(key, sp.createGraph(seqs, cseqlen, 9, seqlenmax));
-//			System.out.println("grph-------"+clustergraphs.get(key).getNum_edges());
+//			//System.out.println("grph-------"+clustergraphs.get(key).getNum_edges());
 //		}
 //		
 //		
 //		for (String key : clustergraphs.keySet()) {
+//			//System.out.println(clustergraphs.get(key));
 //			EpigraphAlgorithm ea = new EpigraphAlgorithm();
-//			System.out.println("grph2220-------"+clustergraphs.get(key).getNum_edges());
+//			//System.out.println("grph2220-------"+clustergraphs.get(key).getNum_edges());
 //
-//			System.out.println("initnode---"+clustergraphs.get(key).getNum_vertices());
+//			//System.out.println("initnode---"+clustergraphs.get(key).getNum_vertices());
 //			String op = ea.optimalPath(clustergraphs.get(key), clustergraphs.get(key).getNode(0), clustergraphs.get(key).getNode(clustergraphs.get(key).getNum_vertices()-1));
-////			System.out.println(op);
+//			System.out.println(op);
 //		}
 		
 		
 		
-	
+		//TTV Algo Original
 		//System.out.println(epigraph);
 //		TTVAlgorithm ta = new TTVAlgorithm();
 //		ArrayList<String> ttv = ta.ttvalgo(epigraph, 3, 9, sp.sequences);
 //		System.out.println();
+//		for (int i=0; i<ttv.size(); i++) {
+//			System.out.println(ttv.get(i));
+//			System.out.println(ta.coverageset.get(i));
+//		}
+////		for (NodeAligned n : epigraph.getVertices()) {
+////			System.out.println(n.getFreq());
+////		}
 //		for (String s : ttv) {
 //			System.out.println(s);
 //		}
-//		//System.out.println(epigraph);
+		//System.out.println(epigraph);
 		
 		
-		
+		//Cocktail Algo Original
 //		CocktailAlgorithm ca = new CocktailAlgorithm();
-//		ArrayList<String> cockt = ca.cocktail(epigraph, 2, 9, (double)sp.sequences.size());
+//		ArrayList<String> cockt = ca.cocktail(epigraph, 3, 9, (double)sp.sequences.size());
 //		//System.out.println(cockt); //final cocktail output
 //		System.out.println();
 //		for (int i=0; i<cockt.size(); i++) {
 //			System.out.println(cockt.get(i));
 //			System.out.println(ca.coverageset.get(i));
 //		}
+		
+		
+		//Immunogenicity Heuristic
+//		HashMap<NodeAligned, Double> old_f = sp.rescore(ifile, epigraph);
+//		
+//		CocktailAlgorithm cai = new CocktailAlgorithm();
+//		ArrayList<String> cockti = cai.cocktailimmuno(old_f, epigraph, 3, 9, (double)sp.sequences.size());
+//		//System.out.println(cockt); //final cocktail output
+//		System.out.println();
+//		for (int i=0; i<cockti.size(); i++) {
+//			System.out.println(cockti.get(i));
+//			System.out.println(cai.coverageset.get(i));
+//		}
+		
+		
 //		for (NodeAligned n : epigraph.getVertices()) {
 //			System.out.println(n.getFreq());
 //		}
@@ -364,19 +425,23 @@ public class SequenceProcessor {
 //		}
 //		System.out.println(epigraph);
 		
-//		EpigraphAlgorithm ea = new EpigraphAlgorithm();
-//		Random random = new Random();
-//		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
-//		int numOutput = 3;
-//		for (int i=0; i<numOutput; i++) {
-//			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
-//			begin_nodes.add(epigraph.getNode(start));
-//		}
-//		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
-//        for (String s : op1) {
-//        	System.out.println(s);
-//        }
-//		
+		
+		//Multi-dimensional DP Heuristic
+		EpigraphAlgorithm ea = new EpigraphAlgorithm();
+		Random random = new Random();
+		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
+		int numOutput = 3;
+		for (int i=0; i<numOutput; i++) {
+			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
+			begin_nodes.add(epigraph.getNode(start));
+		}
+		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
+		ArrayList<Double> coverages = calc_coverage(ea.paths);
+		for (int i=0; i<op1.size(); i++) {
+        	System.out.println(op1.get(i));
+        	System.out.println(coverages.get(i));
+        }
+		
 //		for(int i=0; i<epigraph.getNum_vertices(); i++)
 //		{
 //			System.out.println("epigraph.getNode(i) = " + epigraph.getNode(i));

@@ -7,15 +7,16 @@ import java.util.HashMap;
 public class EpigraphAlgorithm
 {
 	ArrayList<EpigraphBaseNode> path;
+	ArrayList<ArrayList<Double>> paths;
 	
 	public String optimalPath(EpigraphBaseGraph graph, EpigraphBaseNode begin, EpigraphBaseNode end)
     {
-        System.out.println("path1---"+graph.num_edges);
-        System.out.println("path2---"+begin);
-        System.out.println("path3---"+end);
+        //System.out.println("path1---"+graph.num_edges);
+        //System.out.println("path2---"+begin);
+        //System.out.println("path3---"+end);
 
         String output = new String();
-        begin.setF(0);
+        begin.setF(0.0);
         //System.out.println(graph.getNum_vertices());
         for(int i=1;i<graph.getNum_vertices();i++)
         {
@@ -87,7 +88,8 @@ public class EpigraphAlgorithm
 
     public ArrayList<String> optimalPathParallel(EpigraphBaseGraph graph, ArrayList<EpigraphBaseNode> begin, EpigraphBaseNode end)
     {
-        int parallel_runs = begin.size();
+    	paths = new ArrayList<ArrayList<Double>>();
+    	int parallel_runs = begin.size();
 
         for(int i=0;i<parallel_runs;i++)
         {
@@ -99,6 +101,8 @@ public class EpigraphAlgorithm
         for(int i=0;i<parallel_runs;i++)
         {
             output.add(end.getEpitope());
+            paths.add(new ArrayList<Double>());
+            paths.get(i).add(end.getFreq());
         }
         ArrayList<EpigraphBaseNode> current_node = new ArrayList<>();
         for(int i=0;i<parallel_runs;i++)
@@ -107,7 +111,7 @@ public class EpigraphAlgorithm
         }
 
         preProcessing(parallel_runs, begin, graph);
-
+        
         ArrayList<Integer> not_valid = new ArrayList<>();
         while(true)
         {
@@ -119,7 +123,7 @@ public class EpigraphAlgorithm
                     if (!predecessors.isEmpty())
                     {
                         EpigraphBaseNode max_freq_node = getNodeMaxF_value(predecessors, i, begin.get(i));
-
+                        paths.get(i).add(max_freq_node.getFreq());
                         output.set(i, addToOutput(max_freq_node.getEpitope(), output.get(i)));
                         current_node.set(i, max_freq_node);
 

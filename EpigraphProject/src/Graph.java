@@ -25,8 +25,8 @@ public abstract class Graph
     {
     	this.num_vertices = g.num_vertices;
     	this.num_edges = g.num_edges;
-    	this.adjacency_list = g.adjacency_list;
-    	this.vertices = g.vertices;
+    	this.adjacency_list = new HashMap<NodeAligned, ArrayList<NodeAligned>>(g.adjacency_list);
+    	this.vertices = new ArrayList<NodeAligned>(g.vertices);
     }
 
     public HashMap<NodeAligned, ArrayList<NodeAligned>> getAdjacency_list()

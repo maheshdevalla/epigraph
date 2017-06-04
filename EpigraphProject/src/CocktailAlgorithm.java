@@ -65,11 +65,11 @@ public class CocktailAlgorithm
 		for (int i=0; i<m; i++)
     	{
     		//compute next antigen sequence
-			System.out.println(i);
+			//System.out.println(i);
 			Random random = new Random();
 			int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
     		String q = epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getNum_vertices()-1));
-    		System.out.println(q);
+    		//System.out.println(q);
     		//adds new optimal path to the cocktail
     		cocktail.add(q);
     		
@@ -79,11 +79,148 @@ public class CocktailAlgorithm
     			if (!(old_f.containsKey(n))) {
     				old_f.put(n, n.getFreq());
     			}
-    			System.out.println(old_f.get(n)/numSeq);
-    			coverage += (old_f.get(n)/numSeq);
-    			n.setFreq(0);
+    			//System.out.println(old_f.get(n)/(double)numSeq);
+    			coverage += (old_f.get(n)/(double)numSeq);
+    			//coverage += old_f.get(n);
+    			n.setFreq(0.0);
     		}
-    		coverage = coverage/(visited.size());
+    		coverage = coverage/(double)(visited.size());
+    		coverageset.add(coverage);
+//    		for(int j=0;j<q.length();j++)
+//			{
+//				//stores the old/previous frequency of the node
+//    			if (!(old_f.containsKey(graph.getNodeFromEpitope(mySubString(q, j, 9))))) {
+//    				if (!(old_f.containsKey(graph.getNodeFromEpitope("-" + mySubString(q, j, 8))))) {
+//    				System.out.println(mySubString(q,j,9));
+//    				System.out.println(graph.getNodeFromEpitope(mySubString(q, j, 9)));
+//    				if (graph.getNodeFromEpitope(mySubString(q, j, 9)) != null)
+//    					old_f.put(graph.getNodeFromEpitope(mySubString(q, j, 9)), graph.getNodeFromEpitope(mySubString(q, j, 9)).getFreq());
+//    				else
+//    					old_f.put(graph.getNodeFromEpitope("-" + mySubString(q, j, 8)), graph.getNodeFromEpitope("-" + mySubString(q, j, 8)).getFreq());
+//    				}
+//    			}
+//					//sets the frequency of this node to zero
+//    			if (graph.getNodeFromEpitope(mySubString(q, j, 9)) != null)
+//    				graph.getNodeFromEpitope(mySubString(q, j, 9)).setFreq(0);
+//    			else
+//    				graph.getNodeFromEpitope("-" + mySubString(q, j, 8)).setFreq(0);
+//			}
+    	}
+		System.out.println(coverageset);	
+		//HashSet<String> old_cocktail = new HashSet<String>();
+		ArrayList<String> old_cocktail = new ArrayList<String>(); //temporary storage variable for old cocktail
+		
+		//iterative refinement/optimization loop continue until convergence
+//		while (!(cocktail.equals(old_cocktail)))
+//		{
+//			old_cocktail = new ArrayList<String>(cocktail); //copies the current cocktail
+//			//removes each individual antigen sequence from the cocktail and refines it
+//			for (int i = 0; i<m; i++)
+//			{
+//				String q = cocktail.remove(i);
+//				System.out.println(q);
+//				for (int j=0; j<q.length(); j++)
+//				{
+//
+//					//resets the frequency of each eptiope back to its original value
+//					Node n = graph.getNodeFromEpitope(q.charAt(j)+"");
+//					n.setFreq(old_f.get(n));
+//
+//					//System.out.println("NAME" + n.getEpitope());
+//					//System.out.println(n.getFreq());
+//					//System.out.println("OLD" + old_f.get(n));
+//
+//
+//				}
+//				//recalculates a new antigen sequence for the cocktail
+//				String repq = epi.optimalPath(graph, graph.getNode(0), graph.getNode(graph.getNum_vertices()-1));
+//				cocktail.add(i,repq);
+//				for(int j=0;j<q.length();j++)
+//				{
+//					old_f.put(graph.getNodeFromEpitope(q.charAt(j)+""), graph.getNodeFromEpitope(q.charAt(j)+"").getFreq());
+//					//sets the frequency of these new epitopes to zero
+//					graph.getNodeFromEpitope(q.charAt(j)+"").setFreq(0);
+//				}
+//			}
+//		}
+
+
+////    		int qlen = q.length();
+////    		qepitopes = new ArrayList<String>();
+//    		for (int j=0; j<Math.max(qlen-k, 0)+1; j++)
+//    		{
+//    			String qeptiope = q.substring(j,j+k);
+//    			qeptiopes.add(qeptiope);
+////    			find vertex with this epitope and set f = 0
+//    		}
+//    	}
+    	//iterative refinement here
+
+//    	for (int i=0; i<m; i++)
+//    	{
+//    		cocktail.remove(q);
+//    		new_eptiopes = all_eptiopes.copy();
+//    		new_eptiopes.remove(qeptiopes);
+//    		for (String e: new_epitopes)
+//    		{
+//    			//give credit back for e with f = f(e)
+//    		}
+//    		//compute replacement antigen sequence
+//    		String qnew = "newantigen";
+//    		cocktail.add(qnew);
+//    		int qnlen = qnew.length();
+//    		ArrayList<String> qnepitopes = new ArrayList<String>();
+//    		for (int j=0; j<Math.max(qnlen-k, 0)+1; j++)
+//    		{
+//    			String qneptiope = qnew.substring(j,j+k);
+//    			qneptiopes.add(qneptiope);
+//    			//find vertex with this epitope and set f = 0
+//    		}
+//    	}
+
+    	//repeat until no change
+    	return cocktail;
+
+    }
+	
+	public ArrayList<String> cocktailimmuno(HashMap<NodeAligned, Double> old_freq, EpigraphBaseGraph graph, int m, int k, double numSeq)
+    {
+    	//HashSet<String> cocktail = new HashSet<String>();
+		ArrayList<String> cocktail = new ArrayList<String>(); //stores current state of the vaccine cocktail
+		Double coverage = 0.0;
+		coverageset = new ArrayList<Double>();
+		EpigraphAlgorithm epi = new EpigraphAlgorithm();
+    	//Set<String> all_eptiopes = new HashSet<String>();
+    	//ArrayList<String> qepitopes = new ArrayList<String>();
+		// keeps track of old frequencies so they can be reinstated later during iterative refinement/opimization
+		Map<NodeAligned,Double> old_f = new HashMap<NodeAligned,Double>(); 
+		
+		//main for loop to create new antigen sequences
+		for (int i=0; i<m; i++)
+    	{
+    		//compute next antigen sequence
+			//System.out.println(i);
+			Random random = new Random();
+			int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
+    		String q = epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getNum_vertices()-1));
+    		//System.out.println(q);
+    		//adds new optimal path to the cocktail
+    		cocktail.add(q);
+    		
+    		ArrayList<EpigraphBaseNode> visited = epi.getPath();
+    		for (NodeAligned n : visited) {
+    			//EpigraphBaseNode oldnode = oldgraph.getNodeFromEpitope(n.getEpitope());
+    			double oldfreq = old_freq.get(n);
+    			//System.out.println(oldfreq);
+    			if (!(old_f.containsKey(n))) {
+    				old_f.put(n, oldfreq);
+    			}
+    			//System.out.println(old_f.get(n)/(double)numSeq);
+    			coverage += (old_f.get(n)/(double)numSeq);
+    			//coverage += old_f.get(n);
+    			n.setFreq(0.0);
+    		}
+    		coverage = coverage/(double)(visited.size());
     		coverageset.add(coverage);
 //    		for(int j=0;j<q.length();j++)
 //			{
