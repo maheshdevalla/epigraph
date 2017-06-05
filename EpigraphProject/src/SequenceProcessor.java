@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Created by Arvind Suresh
+ */
+
 public class SequenceProcessor {
 	public ArrayList<String> sequences = new ArrayList<String>();
 	//public int seqlen = 0;
@@ -21,6 +25,7 @@ public class SequenceProcessor {
 	public ArrayList<String> all_epitopes = new ArrayList<String>();
 	public int seqlenmax = 0;
 	
+	//method to read in input files and HIV sequences
 	public void process(File file) throws FileNotFoundException, IOException
 	{
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -54,6 +59,7 @@ public class SequenceProcessor {
 		
 	}
 	
+	// primary method of the class to create a full Epigraph from a list of HIV aligned sequences as input
 	public EpigraphBaseGraph createGraph(ArrayList<String> seq, ArrayList<Integer> seqlen, int k, int slnmax)
 	{
 		ArrayList<NodeAligned> nodes = new ArrayList<NodeAligned>();
@@ -63,7 +69,8 @@ public class SequenceProcessor {
 		ArrayList<HashMap<String, Integer>> freqMapList = new ArrayList<HashMap<String, Integer>>();
 		int numVertices;
 		int numEdges;
-		//System.out.println(seq.size());
+		
+		// for loop to read in sequences a generate a list of eptiopes
 		for (int i=0; i < seq.size(); i++)
 		{
 			String s = seq.get(i);
@@ -74,9 +81,6 @@ public class SequenceProcessor {
 			
 			for (int j =0; j<seqlen.get(i)-(2*k); j++)
 			{
-				//System.out.println(k);
-				//System.out.println(seqlen);
-				//System.out.println(j);
 				boolean gap = false;
 				int kcurr = 0;
 				newEpitope = "";
@@ -98,57 +102,18 @@ public class SequenceProcessor {
 						currPos++;
 						kcurr++;
 					}
-					//System.out.println(currPos);
 				}
 				epitopeList.get(i).add(newEpitope);
 				all_epitopes.add(newEpitope);
 			}
 		}
-		//System.out.println(epitopeList);
-//			for (int j=0; j<seqlen-k; j++)
-//			{
-//				String original = s.substring(j, j+k);
-//				if (gapPos.contains(j))
-//				{
-//					int newStart = j+1;
-//					while (s.charAt(newStart) == '-')
-//						newStart++;
-//					epitopeList.get(i).add("-" + epitopeList.get(i).add(s.substring(newStart, newStart+k-1)));
-//				} else if (original.substring(1, original.length()).contains("-"))
-//				{
-//					ArrayList<Integer> gaps = new ArrayList<Integer>();
-//					int numGaps = 0;
-//					for (int start = j+1; start <= j+k-1; start++)
-//					{
-//						if (s.charAt(start) == '-')
-//						{
-//							numGaps++;
-//							gaps.add(start);
-//						}
-//					}
-//					String newEptiope = "";
-//					int start = j;
-//					for (int gap : gaps)
-//					{
-//						newEptiope += s.substring(start, gap);
-//						start = gap+1;
-//						while (gaps.contains(start))
-//							start++;
-//					}
-//				}
-//				
-//			}
-		
-		//int j = 0;
-		//seqlenmax = seqlen.get(0);
+
+		// calculates the frequency of each eptiope and creates a list of maps from each epitope to its frequency
 		for (int i=0; i < epitopeList.get(slnmax).size(); i++)
 		{
 			freqMapList.add(new HashMap<String, Integer>());
 			for (int j=0; j < epitopeList.size(); j++)
 			{
-				//System.out.println(i + " " + j);
-				//System.out.println(epitopeList.size());
-				//System.out.println(epitopeList.get(seqlenmax).size());
 				try {
 					String epitope = epitopeList.get(j).get(i);
 					Set<String> currkeyset = freqMapList.get(i).keySet();
@@ -166,12 +131,12 @@ public class SequenceProcessor {
 						freqMapList.get(i).put(epitope, freqMapList.get(i).get(epitope)+1);
 					}
 				} catch (Exception e) {
-					//e.printStackTrace();
-					//System.exit(0);
+					
 				}
 			}
 		}
 		
+		// generates nodes from the prior data
 		int id = 0;
 		numVertices = 0;
 		ArrayList<HashMap<String, NodeAligned>> epitopeToNode = new ArrayList<HashMap<String, NodeAligned>>();
@@ -187,6 +152,7 @@ public class SequenceProcessor {
 			}
 		}
 		
+		// generates edges from the prior data
 		numEdges = 0;
 		for (int i=0; i < freqMapList.size()-1; i++)
 		{
@@ -219,16 +185,14 @@ public class SequenceProcessor {
 			}
 		}
 		
-		//for (int i=0; i<5; i++) {
-			//NodeAligned no = nodes.get(i);
-			//System.out.println(no.getEpitope());
-		//}
+		// creates the final Epigraph and returns it
 		EpigraphBaseGraph epigraph = new EpigraphBaseGraph(numVertices, numEdges, nodes, edges);
 		System.out.println("grph"+epigraph.getNum_vertices());
 		return epigraph;
 		
 	}
 	
+	// method to generates input file for MHC Class I prediction
 	public void createImmunoFile(ArrayList<String> seqList) throws IOException {
 		List<String> newSeqList = new ArrayList<String>();
 		int id = 1;
@@ -248,6 +212,7 @@ public class SequenceProcessor {
 		Files.write(path, newSeqList, Charset.forName("UTF-8"));
 	}
 	
+	// method to generate intput file for pMHC immunogenicity prediction
 	public void pMHCImmunoFile(ArrayList<String> epitopes) throws IOException {
 		File file = new File("/Users/Arvind/Desktop/testp.fasta");
 		Path path = Paths.get("testp.fasta");
@@ -261,6 +226,7 @@ public class SequenceProcessor {
 		Files.write(path, epitopes, Charset.forName("UTF-8"));
 	}
 	
+	// rescores epitope frequencies based on immunogenicity prediction data
 	public HashMap<NodeAligned, Double> rescore(File file, EpigraphBaseGraph epigraph) throws FileNotFoundException, IOException {
 		//EpigraphBaseGraph newepi = new EpigraphBaseGraph(epigraph);
 		HashMap<String, Double> immunoscore = new HashMap<String, Double>();
@@ -287,20 +253,7 @@ public class SequenceProcessor {
 		
 	}
 	
-	/*public static double calc_coverage(String sequence, EpigraphBaseGraph epigraph, int numSeq) {
-		double coverage = 0.0;
-		for (int i=0; i<sequence.length()-9; i++) {
-			String epitope = sequence.substring(i, i+9);
-			//System.out.println(epitope);
-			EpigraphBaseNode en = epigraph.getNodeFromEpitope(epitope);
-			System.out.println(en);
-			if (en != null) 
-				coverage += (en.getFreq()/(double)(numSeq));
-		}
-		coverage = (coverage/((double)(sequence.length()-9)));
-		return coverage;
-	}*/
-	
+	// calculates coverage scores for the various heuristics
 	public static ArrayList<Double> calc_coverage(ArrayList<ArrayList<Double>> paths) {
 		ArrayList<Double> coverages = new ArrayList<Double>();
 		for (ArrayList<Double> path : paths) {
@@ -316,10 +269,11 @@ public class SequenceProcessor {
 	
 	
 	
+	// primary main method for the whole program - START HERE
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		//input file
-		File file = new File("/Users/Arvind/Desktop/test6.fasta");
+		File file = new File("/Users/Arvind/Desktop/testo.fasta");
 		
 		//Creates the Epigraph - use for all algo and heuristics EXCEPT clustering heuristic
 		SequenceProcessor sp = new SequenceProcessor();
@@ -393,15 +347,15 @@ public class SequenceProcessor {
 		
 		
 		//Cocktail Algo Original
-//		CocktailAlgorithm ca = new CocktailAlgorithm();
-//		ArrayList<String> cockt = ca.cocktail(epigraph, 3, 9, (double)sp.sequences.size());
-//		//System.out.println(cockt); //final cocktail output
-//		System.out.println();
-//		for (int i=0; i<cockt.size(); i++) {
-//			System.out.println(cockt.get(i));
-//			System.out.println(ca.coverageset.get(i));
-//		}
-//		
+		CocktailAlgorithm ca = new CocktailAlgorithm();
+		ArrayList<String> cockt = ca.cocktail(epigraph, 3, 9, (double)sp.sequences.size());
+		//System.out.println(cockt); //final cocktail output
+		System.out.println();
+		for (int i=0; i<cockt.size(); i++) {
+			System.out.println(cockt.get(i));
+			System.out.println(ca.coverageset.get(i));
+		}
+		
 		
 		//Immunogenicity Heuristic
 //		HashMap<NodeAligned, Double> old_f = sp.rescore(ifile, epigraph);
@@ -427,22 +381,23 @@ public class SequenceProcessor {
 		
 		
 		//Multi-dimensional DP Heuristic
-		EpigraphAlgorithm ea = new EpigraphAlgorithm();
-		Random random = new Random();
-		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
-		int numOutput = 3;
-		for (int i=0; i<numOutput; i++) {
-			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
-			System.out.println(start);
-			begin_nodes.add(epigraph.getNode(start));
-		}
-		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
-		ArrayList<Double> coverages = calc_coverage(ea.paths);
-		for (int i=0; i<op1.size(); i++) {
-        	System.out.println(op1.get(i));
-        	System.out.println(coverages.get(i));
-        }
+//		EpigraphAlgorithm ea = new EpigraphAlgorithm();
+//		Random random = new Random();
+//		ArrayList<EpigraphBaseNode> begin_nodes = new ArrayList<EpigraphBaseNode>();
+//		int numOutput = 3;
+//		for (int i=0; i<numOutput; i++) {
+//			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
+//			System.out.println(start);
+//			begin_nodes.add(epigraph.getNode(start));
+//		}
+//		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));
+//		ArrayList<Double> coverages = calc_coverage(ea.paths);
+//		for (int i=0; i<op1.size(); i++) {
+//        	System.out.println(op1.get(i));
+//        	System.out.println(coverages.get(i));
+//        }
 		
+		// Testing Code to check frequencies of each node in the epigraph
 //		for(int i=0; i<epigraph.getNum_vertices(); i++)
 //		{
 //			System.out.println("epigraph.getNode(i) = " + epigraph.getNode(i));

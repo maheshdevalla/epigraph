@@ -3,18 +3,16 @@ import java.util.HashMap;
 
 /**
  * Created by reshmi on 5/18/17.
+ * Modified by Arvind
  */
 public class EpigraphAlgorithm
 {
 	ArrayList<EpigraphBaseNode> path;
 	ArrayList<ArrayList<Double>> paths;
 	
+	// core Epigraph algorithm - Algorithm #1 from paper
 	public String optimalPath(EpigraphBaseGraph graph, EpigraphBaseNode begin, EpigraphBaseNode end)
     {
-        //System.out.println("path1---"+graph.num_edges);
-        //System.out.println("path2---"+begin);
-        //System.out.println("path3---"+end);
-
         String output = new String();
         begin.setF(0.0);
         //System.out.println(graph.getNum_vertices());
@@ -37,9 +35,7 @@ public class EpigraphAlgorithm
 
         path = new ArrayList<>();
         path.add(end);
-        //System.out.println("Start: " + path);
         output = addToOutput(end.getEpitope(), output);
-//        output = end.getEpitope() + output;
         EpigraphBaseNode current_node = end;
         while(true)
         {
@@ -66,7 +62,8 @@ public class EpigraphAlgorithm
         return output;
     }
 
-    public String addToOutput(String epitope, String output)
+    // responsible for generating final antigen output sequence
+	public String addToOutput(String epitope, String output)
     {
         if(epitope.isEmpty())
             return output;
@@ -81,14 +78,14 @@ public class EpigraphAlgorithm
                 break;
             }
         }
-        //System.out.println(i);
         if(epitope.length() - i >= 0 && output.length() > 1)
             return epitope + output.substring((epitope.length() - i));
         else
             return epitope + output;
     }
 
-    public ArrayList<String> optimalPathParallel(EpigraphBaseGraph graph, ArrayList<EpigraphBaseNode> begin, EpigraphBaseNode end)
+	// multidimensional dynamic programming heuristic
+	public ArrayList<String> optimalPathParallel(EpigraphBaseGraph graph, ArrayList<EpigraphBaseNode> begin, EpigraphBaseNode end)
     {
     	paths = new ArrayList<ArrayList<Double>>();
     	int parallel_runs = begin.size();
@@ -153,7 +150,8 @@ public class EpigraphAlgorithm
         return output;
     }
 
-    public void preProcessing(int parallel_runs, ArrayList<EpigraphBaseNode> begin, EpigraphBaseGraph graph)
+    // helper method for multidimensional DP heuristic
+	public void preProcessing(int parallel_runs, ArrayList<EpigraphBaseNode> begin, EpigraphBaseGraph graph)
     {
         for(int j=0;j<parallel_runs;j++)
         {

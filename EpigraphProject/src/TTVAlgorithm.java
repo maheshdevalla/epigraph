@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 /*
- * CS89/189 Final Project
- * Created and Implemented by Arvind Suresh, Reshmi Suresh
+ * Created by Arvind Suresh
  * Debugging and Testing by Arvind Suresh, Mahesh Devalla
  */
 public class TTVAlgorithm {
@@ -50,7 +49,6 @@ public class TTVAlgorithm {
 	public ArrayList<String> ttvalgo(EpigraphBaseGraph graph, int m, int k, ArrayList<String> seq)
     {
 		int[][] coverage = new int[seq.size()][m]; //stores the coverage calculation of each sequence-sequence pair
-//		ArrayList<String> cocktail = new ArrayList<String>();
 		EpigraphAlgorithm epi = new EpigraphAlgorithm();
 		
 		//creates the first antigen sequence (q0) that will be in every vaccine
@@ -72,8 +70,6 @@ public class TTVAlgorithm {
 			int q_val = rand.nextInt(seq.size());
 			q_list.add(seq.get(q_val));
 		}
-		//String q1 = "abcde"; // m=2;
-		//q_list.add(q1);
 		ArrayList<String> old_ttv_list = new ArrayList<String>(); //stores the old TTV for optimization purposes
 		
 		//outside loop is for iterative refinement and optimization
@@ -82,7 +78,6 @@ public class TTVAlgorithm {
 		{
 			counter++;
 			old_ttv_list = new ArrayList<String>(ttv_list);
-			//Collections.sort(old_ttv_list);
 			ttv_list = new ArrayList<String>();
 			ttv_list.add(q0);
 			
@@ -135,24 +130,14 @@ public class TTVAlgorithm {
 				for (EpigraphBaseNode node : q0path) {
 					node.setFreq(0);
 				}
-//				for (int j = 0; j<q0.length(); j++)
-//				{
-//					NodeAligned node = graph.getNodeFromEpitope(mySubString(q0, j, 1));
-//					if (vertices.contains(node)) 
-//						graph.getNodeFromEpitope(mySubString(q0, j, 1)).setFreq(0);
-//				}
+				
 				//generates a new antigen sequence for each cluster and adds it to the final TTV
 				Random random = new Random();
 				int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
-				//int end = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
 				ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getVertices().size()-1)));
-				//ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(end)));
 				ArrayList<EpigraphBaseNode> path = epi.getPath();
-				//System.out.println("PATH = " + path);
 				double cscore = 0.0;
 				for (NodeAligned na : path) {
-					System.out.println("FREQ " + na.getFreq());
-					System.out.println("SIZE " + S.get(i-1).size());
 					if (S.get(i-1).size() != 0) {
 						cscore += (na.getFreq()/((double)S.get(i-1).size()));
 					} else {
@@ -162,44 +147,13 @@ public class TTVAlgorithm {
 				cscore = (cscore/(double)(path.size()));
 	    		coverageset.add(cscore);
 			}
-//			System.out.println(coverage);
-			//for(int[] temp:coverage){
-				//for(int temp1: temp){
-					//System.out.println(temp1);
-				//}
-			//}
+
 			System.out.println(q0);
 			for (ArrayList<String> cluster: S) {
 				System.out.println(cluster);
 			}
-			//System.out.println(S);
-			//Collections.sort(ttv_list);
+			
 		}
-		/*for (int i=1; i<m; i++)
-		{
-			EpigraphBaseGraph clustergraph = makeClusterGraph(S.get(i-1), graph);
-			ArrayList<Node> clusterv = clustergraph.getVertices();
-			ArrayList<String> clustere = new ArrayList<String>();
-			for (int j=0; j<clusterv.size(); j++)
-			{
-				clustere.add(j, clusterv.get(j).getEpitope());
-			}
-			for (int j=0; j<clustere.size(); j++)
-			{
-				int freq = computeOneFreq(clustere.get(j), S.get(i-1));
-				clustergraph.getNodeFromEpitope(clustere.get(j)).setFreq(freq);
-			}
-			ArrayList<Node> vertices = clustergraph.getVertices();
-			for (int j = 0; j<q0.length(); j++)
-			{
-				Node node = graph.getNodeFromEpitope(q0.charAt(j)+"");
-				if (vertices.contains(node)) 
-					graph.getNodeFromEpitope(q0.charAt(j)+"").setFreq(0);
-			}
-			ttv_list.add(i, epi.optimalPath(clustergraph, clustergraph.getNode(0), clustergraph.getNode(clustergraph.getVertices().size()-1)));
-		}*/
-		
-		
 		return ttv_list;
     }
 	
@@ -211,8 +165,6 @@ public class TTVAlgorithm {
 		{
 			if (s.contains(epitope)) val+=1;
 		}
-		//return (int)((val*seq.size())*100);
-		//return (val*seq.size());
 		return val;
 	}
 

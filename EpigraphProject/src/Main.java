@@ -1,3 +1,6 @@
+//NOTE: This is NOT actually the class for the MAIN method. This is just a testing class
+//Go to SequenceProcessor's main method
+
 public class Main extends Node
 {
 

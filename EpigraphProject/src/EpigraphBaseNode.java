@@ -2,6 +2,7 @@ import java.util.ArrayList;
 
 /**
  * Created by reshmi on 5/18/17.
+ * Modified by Arvind
  */
 public class EpigraphBaseNode extends NodeAligned
 {

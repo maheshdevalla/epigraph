@@ -1,7 +1,7 @@
 import java.util.Set;
 
 /**
- * Created by reshmi on 5/14/17.
+ * Created by Arvind Suresh
  */
 public abstract class NodeAligned
 {
