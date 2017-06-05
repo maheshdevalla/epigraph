@@ -202,7 +202,8 @@ public class CocktailAlgorithm
 			//System.out.println(i);
 			Random random = new Random();
 			int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
-    		String q = epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getNum_vertices()-1));
+			int end = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
+    		String q = epi.optimalPath(graph, graph.getNode(start), graph.getNode(end));
     		//System.out.println(q);
     		//adds new optimal path to the cocktail
     		cocktail.add(q);

@@ -77,8 +77,10 @@ public class TTVAlgorithm {
 		ArrayList<String> old_ttv_list = new ArrayList<String>(); //stores the old TTV for optimization purposes
 		
 		//outside loop is for iterative refinement and optimization
-		while (!(ttv_list.equals(old_ttv_list)))
+		int counter = 1;
+		while (!(ttv_list.equals(old_ttv_list)) && counter <= 5)
 		{
+			counter++;
 			old_ttv_list = new ArrayList<String>(ttv_list);
 			//Collections.sort(old_ttv_list);
 			ttv_list = new ArrayList<String>();
@@ -142,7 +144,9 @@ public class TTVAlgorithm {
 				//generates a new antigen sequence for each cluster and adds it to the final TTV
 				Random random = new Random();
 				int start = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
+				//int end = random.nextInt(graph.getNum_vertices() - 0 + 1) + 0;
 				ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(graph.getVertices().size()-1)));
+				//ttv_list.add(epi.optimalPath(graph, graph.getNode(start), graph.getNode(end)));
 				ArrayList<EpigraphBaseNode> path = epi.getPath();
 				//System.out.println("PATH = " + path);
 				double cscore = 0.0;

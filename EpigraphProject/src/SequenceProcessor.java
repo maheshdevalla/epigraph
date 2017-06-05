@@ -319,7 +319,7 @@ public class SequenceProcessor {
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		//input file
-		File file = new File("/Users/Arvind/Desktop/test3.fasta");
+		File file = new File("/Users/Arvind/Desktop/test6.fasta");
 		
 		//Creates the Epigraph - use for all algo and heuristics EXCEPT clustering heuristic
 		SequenceProcessor sp = new SequenceProcessor();
@@ -377,7 +377,7 @@ public class SequenceProcessor {
 		//TTV Algo Original
 		//System.out.println(epigraph);
 //		TTVAlgorithm ta = new TTVAlgorithm();
-//		ArrayList<String> ttv = ta.ttvalgo(epigraph, 3, 9, sp.sequences);
+//		ArrayList<String> ttv = ta.ttvalgo(epigraph, 5, 9, sp.sequences);
 //		System.out.println();
 //		for (int i=0; i<ttv.size(); i++) {
 //			System.out.println(ttv.get(i));
@@ -401,7 +401,7 @@ public class SequenceProcessor {
 //			System.out.println(cockt.get(i));
 //			System.out.println(ca.coverageset.get(i));
 //		}
-		
+//		
 		
 		//Immunogenicity Heuristic
 //		HashMap<NodeAligned, Double> old_f = sp.rescore(ifile, epigraph);
@@ -433,6 +433,7 @@ public class SequenceProcessor {
 		int numOutput = 3;
 		for (int i=0; i<numOutput; i++) {
 			int start = random.nextInt(epigraph.getNum_vertices() - 0 + 1) + 0;
+			System.out.println(start);
 			begin_nodes.add(epigraph.getNode(start));
 		}
 		ArrayList<String> op1 = ea.optimalPathParallel(epigraph, begin_nodes, epigraph.getNode(epigraph.getNum_vertices()-1));

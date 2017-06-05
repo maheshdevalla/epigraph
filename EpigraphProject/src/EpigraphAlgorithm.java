@@ -66,13 +66,14 @@ public class EpigraphAlgorithm
         return output;
     }
 
-    private String addToOutput(String epitope, String output)
+    public String addToOutput(String epitope, String output)
     {
         if(epitope.isEmpty())
             return output;
         else if(output.isEmpty())
             return epitope;
-        int j=0, i = epitope.length()-1;
+        int j=0;
+        int i = epitope.length()-1;
         for(i=epitope.length()-1;i>=0;i--)
         {
             if(epitope.charAt(i) == output.charAt(j))
@@ -80,6 +81,7 @@ public class EpigraphAlgorithm
                 break;
             }
         }
+        //System.out.println(i);
         if(epitope.length() - i >= 0 && output.length() > 1)
             return epitope + output.substring((epitope.length() - i));
         else
@@ -113,6 +115,7 @@ public class EpigraphAlgorithm
         preProcessing(parallel_runs, begin, graph);
         
         ArrayList<Integer> not_valid = new ArrayList<>();
+        int counter = 0;
         while(true)
         {
             for(int i=0;i<parallel_runs;i++)
@@ -136,12 +139,17 @@ public class EpigraphAlgorithm
                     {
                         not_valid.add(i);
                     }
+                   
                 }
+                
             }
             if(not_valid.size() == parallel_runs)
                 break;
+            else if (counter > 10)
+            	break;
+            counter++;
         }
-
+        System.out.println(counter);
         return output;
     }
 
@@ -215,6 +223,9 @@ public class EpigraphAlgorithm
 
     public static void main(String[] args)
     {
+    	//EpigraphAlgorithm ea = new EpigraphAlgorithm();
+    	//System.out.println(ea.addToOutput("ABCDEFGHI", "BCDEFGHIJKLMNOP"));
+    	//System.out.println(ea.addToOutput("ABCDEFGHI", "BCBCDEFBGH"));
         ArrayList<String> seq = new ArrayList<String>();
 
         //Test Case #0
